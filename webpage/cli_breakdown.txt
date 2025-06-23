@@ -1070,7 +1070,6 @@ Exploring the 'col' Command
 
 ##Use col to convert these tabs to spaces##
 
---command: cat /etc/protocols | col -x | cat -A | head -n 10
 
 	-cat /etc/protocols: outputs the content of the file
 	-'|': pipes this output to col
@@ -1141,7 +1140,101 @@ Working with the paste Command
 
 --command: paste -d ':' fruits.txt colors.txt tastes.txt
 
+	-The -d ':' option tells paste to use ':' as the delimiter between fields from different files
 
+--command: paste -s fruits.txt colors.txt tastes.txt
+
+	-The -s option tells paste to paste the contents of each file as a single line
+
+##Example Script Lab practice##
+
+#!/bin/bash
+
+# Display the full PATH
+echo "Full PATH:"
+echo "$PATH"
+
+# List each directory in PATH on a separate line
+echo
+echo "Directories in PATH:"
+echo "$PATH" | tr ':' '\n'
+
+# Count the total number of directories in PATH
+echo
+echo "Total directories in PATH: $(echo "$PATH" | tr ':' '\n' | wc -l)"
+
+
+########################
+Basic Output Redirection
+########################
+
+--command: echo 'hello labex' > redirect
+
+	-This command does two things:
+
+		1. echo 'hello labex' prints the text "hello labex"
+		2. The > symbol redirects this output to a file named redirect
+			*If the file doesn't exist, it will be created. If it already exists, its content will be overwritten*
+
+--command: echo 'labex.io' >> redirect
+
+	-The >> operator is similar to >, but instead of overwriting the file, 
+		it appends the new content to the end of the existing file
+
+
+#################$$$$$$$$$$####################
+Understanding Standard Input, Output, and Error
+#################$$$$$$$$$$####################
+
+1. (0) Standard Input (stdin): This is the default input source, usually your *keyboard*
+							   It's where the system expects input to come from
+							   File Desriptor: 0
+							   Device File: /dev/stdin
+							   Description: stdin
+
+2. (1) Standard Output (stdout): This is the default output destination, usually your *screen*
+								 It's where the system sends normal output
+								 File Desriptor: 1
+								 Device File: /dev/stdout
+								 Description: stdout
+
+
+3. (2) Standard Error (stderr): This is where error messages are sent, *also* usually your **screen**
+								It's separate from stdout to allow error messages to be handled differently if needed
+								File Desriptor: 2
+								Device File: /dev/stderr
+								Description: stderr
+
+Example: 
+
+cat > Documents/test.c << EOF
+#include <stdio.h>
+
+int main()
+{
+    printf("hello world\n");
+    return 0;
+}
+EOF
+
+--command: cat Documents/test.c
+
+##Redirecting Standard Error##
+
+--command: cat Documents/test.c nonexistent.c > output.log 2> error.log
+
+	-This command does several things:
+
+		-'cat Documents/test.c nonexistent.c': tries to display the contents of both files
+		-'> output.log redirects stdout': (file descriptor 1) to a file named output.log
+		-'2> error.log redirects stderr': (file descriptor 2) to a file named error.log
+
+--command: echo "Output log"
+--command: cat output.log
+--command: echo "Error log:"
+--command: cat error.log
+
+##Combining Standard Output and Standard Error##
 
 
 
@@ -1203,6 +1296,7 @@ Working with the paste Command
 /tmp: A directory for temporary files, often cleared on reboot
 
 /usr: Contains user-related programs, libraries, and documentation
+
 
 /var: Stores variable data like log files and databases
 
