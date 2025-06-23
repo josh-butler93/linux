@@ -1,0 +1,1244 @@
+###################
+Linux Tips & Tricks
+###################
+--Misc
+
+Link: setting up ad nfs: https://www.reddit.com/r/sysadmin/comments/7hvy1c/sssd_ad_and_autofs_getting_autofs_to_mount_nfs/
+
+command: tcpdump 
+
+			-tcpdump is a powerful Linux command-line tool for capturing and analyzing network traffic
+
+				-It's used for troubleshooting network issues, security analysis, and understanding network behavior
+
+					-You can capture packets in real-time or save them to a file for later analysis, and it also supports various filters to isolate specific types of traffic
+
+						command: tcpdum -i eth0 >> ctrl + z
+
+#############
+Linux OS Type
+#############
+
+command: lsb_release -a (ubnutu server)
+
+command: cat /etc/os-release (ubnutu && rhel)
+
+*command: uname -r (ubuntu && rhel)
+
+*command: hostnamectl (ubuntu && rhel)
+
+########################################
+command: echo "Hello, Linux" > hello.txt
+
+		 - echo: is like "print" in other languages
+		 - >: symbol tells Linux to put the output into a file instead of displaying it on the screen
+
+command: ls *.txt
+
+		 - wildcard (character): used to search multiple files all at once
+
+				Wildcards are powerful tools for working with groups of files. The most common wildcards are:
+
+					*: Matches any number of characters
+					?: Matches any single character
+					[abc]: Matches any one character listed in the brackets
+
+command: touch note_{1..5}.txt
+
+command: ls note* 
+
+		 {1..5}.txt: this is used to create multiple files at one time
+
+
+command: mv hello_copy.txt ..
+
+		 This will move the file to the parent directory
+
+
+command: crtl + L --This shortcut clears the screen
+
+command: type cd
+		 type ls
+
+		 - This tells the user what each command is
+
+command: apropos password
+		 apropos file | grep create
+
+		 apropos: The apropos command helps you find commands related to a specific keyword
+
+command: sudo adduser <username> >> sudo adduser tim 
+
+		 - When you create a new user with adduser, it automatically creates a primary group for that user with the same name as the username
+
+			-This is called a User Private Group (UPG) scheme
+
+	verification:
+
+			command: ls /home
+
+			command: groups <username> >> groups tim
+
+			command: id <username> >> id tim 
+
+					 id: command will show you jack's user ID (UID), primary group ID (GID), and any secondary groups
+
+							-The user labex has a user ID (UID) of 5000
+							-The primary group for labex is also named labex with a group ID (GID) of 5000
+							-labex belongs to several secondary groups, including sudo, ssl-cert, and public
+
+command: cat /etc/groups | sort
+
+		 -cat: command displays file contents
+		 -'/etc/group': is where group information is stored
+		 -'| sort': sorts the output alphabetically
+
+command: cat /etc/group | grep -E "labex"
+
+		 -This command searches for lines containing "labex" in the group file
+
+command: sudo groupadd <group name> >> sudo groupadd developers
+
+command: sudo usermod -aG <group name> <user> >> sudo usermod -aG tim
+
+		 -usermod: modifies user accounts
+		 -'-aG': option adds the user to a supplementary group (-aG=append to group)
+
+			verification:
+
+				command: groups <username> >> groups tim
+
+command: sudo usermod -aG <group> <username> 
+
+	*adding user to the sudo group
+
+		command: sudo usermod -aG sudo tim
+
+***Examine the current permissions in the /home directory:***
+
+command: ls -l /home
+
+**Changing file ownership/permissions***
+
+command: touch /home/labex/testfile
+
+		 command: ls -l /home/labex/testfile
+
+command: sudo chown jack:jack /home/labex/testfile
+
+		 command: ls -l /home/labex/testfile
+
+command: sudo chmod 750 /home/labex/testfile && ls -l /home/labex/testfile
+
+		 -7 (owner): Read (4) + Write (2) + Execute (1) = 7
+		 -5 (group): Read (4) + Execute (1) = 5
+		 -0 (others): No permissions
+
+command: sudo useradd -g my_group new_user >> sudo useradd -g dev tim
+
+***Setting Users home directory && primary group***
+
+command: sudo groupadd dev >> primary group for tim
+
+		command: sudo useradd -m -d /home/jack -g dev -G labex jack or sudo useradd -m -d /home/tim -g dev -G labex tim
+
+				 1. sudo: Run the command with superuser privileges
+				 2. useradd: Command to create a new user
+				 3. -m: Create the user's home directory if it doesn't exist
+				 4. -d /home/jack: Specify the home directory path
+				 5. -g dev: Set the primary group to 'dev'
+				 5. tim: The username to create
+
+command: sudo groupadd test >> primary group for bob
+
+		 command: sudo adduser -m -d /home/bob -g test bob or command: sudo useradd -m -d /home/bob -g dev -G labex bob
+
+				 1. sudo: Run the command with superuser privileges
+				 2. useradd: Command to create a new user
+				 3. -m: Create the user's home directory if it doesn't exist
+				 4. -d /home/jack: Specify the home directory path
+				 5. -g dev: Set the primary group to 'dev'
+				 5. tim: The username to create
+
+	**Setting the secondary groups for the above users
+
+			 command: sudo usermod -aG labex jack
+			 command: sudo usermod -aG labex bob
+
+				 1. usermod: Modify a user account
+				 2. -aG: Append the user to a supplementary group
+				 3. labex: The group to add the user to
+				 4. jack / bob: The username to modify
+
+***Linux File System***
+
+	- Linux File System: Think of this as a tree-like structure for organizing all the files on your computer
+			- Unlike Windows with its drive letters (C:, D:, etc.)
+			- Linux has a single root directory (/) from which everything else branches out
+
+	- Directory (folder): This is the Linux term for what you might know as a "folder" in other operating systems
+							- It's a container for files and other directories
+	- File: In Linux, almost everything is a file! Regular documents, directories, even hardware devices are treated as files
+
+command: tree /
+
+	- ls /home (user folder): /home is where user directories are stored-Each user typically has their own directory here
+	- ls /etc (system configuration folder): /etc contains system configuration files
+	- ls /bin (binaries folder): /bin holds essential command binaries (programs) that need to be available for all users
+
+command: cd / && ls -l >> navigates to the root directory <labex: //$>
+command: cd ~ && ls -l >> navigates to the home directory <labex:~/$
+
+#########################################
+***Navigating and Creating Directories***
+
+##########
+Navigating
+##########
+
+command: mkdir -p ~/project/pracitice/subdirecotry
+
+			- mkdir: means "make directory"
+			- '-p': option allows us to create parent directories if they don't exist
+			- This command creates a practice directory inside your project directory, and a subdirectory inside practice
+
+relative path navigation (~): It's called a relative path because it depends on your current location
+	command: cd ~/project/pracitice/subdirecotry && pwd
+	command: cd .. && pwd
+		- '..': always refers to the parent directory
+
+absolute path (/): This is an absolute path because it starts from the root directory (/) and gives the complete path to the destination, regardless of where you currently are
+	command: cd /home/labex/project/pracitice/subdirecotry && pwd
+
+	navigation shortcuts: 
+
+		'cd ~': # Go to home directory
+			pwd
+		'cd -': # Go to previous directory
+			pwd
+		'cd': # Another way to go to home directory
+			pwd
+
+########
+Creating
+########
+
+command: cd ~/project 
+command: mkdir dir1 dir2 dir3 && ls -l
+
+			command: touch file1.txt && ls -l file1.txt
+			command: echo "Hello Linux" > file2.txt && cat file2.txt
+				command: echo "This is a new line." >> file2.txt
+					- '>>': appends to the file instead of overwriting it *adds the new line to the end of the file instead of overwriting it
+
+*nested directory creation*
+command:  mkdir -p nested/structure/example 
+*command: tree nested >> this will list out the nested directory >> * tree ansible *
+			-The tree command gives us a nice visual representation of the directory structure we just created
+
+***Copying, Moving, and Renaming Files***
+
+##Copying Files##
+
+command: cp file1.txt dir1/ && ls dir1
+
+command: cp file1.txt dir2/file2_copy.txt && ls dir2
+
+##Moving Files##
+
+command: mv file1.txt dir3/ && ls && ls dir3
+
+command: mv dir3/file1.txt dir3/renamed_file.txt && ls dir3
+
+##Copying Directories***
+
+command: cp -r <directory name to be copied> <new directory location> && tree <new directory locaion>
+
+	ex: cp -r nested dir1/ && tree dir1
+
+			- The -r option tells cp to copy directories recursively (including all subdirectories and files)
+
+#################################
+Viewing and Editing File Contents
+#################################
+
+command: cat << EOF > multiline.txt   *EOF part can be what you want it to be as long as EOF to end the file is the same
+		 (auto popoulate) (Line 1)heredoc: Hello, Linux
+		 (auto popoulate) (Line 2)heredoc: This is a multiline file.
+		 (auto popoulate) (Line 3)heredoc: Created using a here-document.
+		 EOF
+
+			- This uses a "here-document" to create a file with multiple lines
+			- It's a convenient way to create files with predefined content
+			- The << operator is followed by a delimiter (in this case, EOF)
+			- The shell then reads all the following lines as input until it sees a line containing only the delimiter
+			- This entire block of text is then redirected to the file multiline.txt
+
+command: nl(Lima) multiline.txt >> nl multiline.txt
+
+			- nl adds line numbers to the output, which can be helpful for referencing specific lines
+
+command: nano -l(Lima) multiline.txt >> nano -l multiline.txt
+
+######################
+Finding Files in Linux
+######################
+
+command: find . -name "*.txt"
+			- This command should list all .txt files in your current directory and subdirectories
+
+command: sudo find / -name "passwd"
+
+			- This command will search for files named "passwd" throughout the filesystem
+			- We use sudo here because searching the entire filesystem (starting from the root directory /) requires elevated permissions
+			- Many system directories are not readable by regular users, so sudo allows us to search these protected areas
+
+command: find ~ -size +1M
+
+			- This should list any files larger than 1MB in your home directory
+
+command: fine ~ -mtime -1
+
+			- We can also use find to search for files modified within a certain time frame
+			- Let's find files in your home directory that were modified in the last 24 hours
+
+
+################
+Example Scenario
+################
+
+--Tasks
+
+	1. Find the sources.list file. If multiple files are found, choose the one with the shortest path
+
+		-solution: sudo find / -name sources.list
+
+	2. Change the file owner to yourself (the labex user)
+
+		-solution: sudo chown labex /etc/apt/sources.list
+
+	3. Set the access permissions so that only you can read and write this file
+
+		-solution: suod chmod 600 /etc/apt/sources.list
+
+
+################################
+Understanding Variables in Linux
+################################
+
+--Creating shell variabels
+
+command: my_var="Hello, Linux"
+
+	command: echo $my_var
+
+		command: echo "The value of my_var is: $my_var"
+
+--Creating Environment Variables
+
+command: env >> This command is used to view all current environment variables
+
+command: echo $PATH
+
+	-The PATH variable lists directories where the system looks for executable programs
+
+		-Each directory is separated by a colon (:)
+
+command: export MY_ENV_VAR="This is an environment variable"
+
+	-The export command makes the variable available to child processes
+
+		-This is the key difference between shell variables and environment variables
+
+--Adding Directory to PATH
+
+command: export PATH="$PATH:$HOME/my_scripts"
+
+	-$PATH: is the current value of the PATH environment variable
+
+	-':': is used to separate directories in the PATH
+
+	-$HOME: is an environment variable that points to your home directory (again, /home/labex in our case)
+
+	*So, we're appending :$HOME/my_scripts to the existing PATH
+	*This tells the system to look for executables in my_scripts after it searches the directories in the original PATH
+
+		command: echo $PATH | grep my_scripts
+
+#Test Example#
+
+command: mkdir ~/my_scirpts && nano ~/my_scripts/hello.sh
+
+		#!/bin/bash
+		echo "Hello from my test custom script"
+
+command: sudo chmod +x ~/my_scripts/hello.sh
+
+command: hello.sh (now instead of having to run the ./hello.sh you can now run the just 'hello.sh')
+
+##The environment variables we've set will be lost when you close the terminal##
+
+		To make them permanent, we need to add them to a shell configuration file
+
+			we're using the Z shell (zsh), which is an extended version of the Bourne Shell (sh), with many improvements, including some features of Bash, ksh, and tcsh
+
+				Zsh has become increasingly popular and is now the default shell in macOS
+
+					If you were using Bash (which is still the default on many Linux distributions), you would modify .bashrc 
+
+						Since we're using Zsh, we'll modify .zshrc
+
+command: nano ~/.zshrc
+
+		scroll to the bottom and add these parameters
+			export MY_ENV_VAR="This is an environment variable" 
+			export PATH="$PATH:$HOME/my_scripts"
+
+command: source ~/.zshrc
+
+			-To apply these changes without restarting your terminal, use the above source command
+
+###Important Environment Variables###
+
+command: echo$HOME
+
+			-HOME: Points to the home directory of the current user
+
+command: echo $USER
+
+			-USER: Contains the username of the current user
+
+command: echo $SHELL
+
+			-SHELL: Specifies the user's default shell
+
+command: echo $PWD
+
+			-PWD: Stands for "Print Working Directory". It contains the path of the current directory
+
+command: echo $TERM
+
+			-TERM: Specifies the type of terminal to emulate when running the shell
+
+####Unsetting Environment Variables####
+
+command: echo $MY_ENV_VAR
+
+command: unset MY_ENV_VAR
+
+command: echo $MY_ENV_VAR >> verify that nothing shows up
+
+command: unset -v MY_ENV_VAR
+
+			-You can also use the -v option with unset to ensure you're unsetting a variable and not a shell function:
+
+Example:
+
+command: nano ~/.zshrc
+
+command: export PROJECT_DIR=/home/labex/projects
+
+command: source ~/.zshrc
+
+command: echo $PROJECT_DIR
+
+#####################################
+Creating a Sample Directory Structure
+#####################################
+
+--Understand how file packing and compression work with different types of files and directories
+
+command: cd ~/project
+
+command: mkdir -p test_dir/{subdir1,subdir2}
+
+command: echo "This is file 1" > test_dir/file1.txt
+
+command: echo "This is file 2" > test_dir/file2.txt
+
+command: echo "This is in subdir1" > test_dir/subdir1/subfile1.txt
+
+command: echo "This is in subdir2" > test_dir/subdir2/subfile2.txt
+
+command: tree test_dir
+
+#Packaging Files with tar#
+
+(zipping files) 
+command: tar -cvf test_archive.tar test_dir
+
+			-tar: The command we're using to create the archive
+			-'-c': This option tells tar to create a new archive
+			-'-v': This stands for "verbose" It makes tar print out the names of the files it's adding to the archive
+			-'-f': This option is followed by the name of the archive file we want to create
+			-test_archive.tar: This is the name we're giving to our new archive file
+							   The .tar extension is conventional for tar archives
+			-test_dir: This is the directory we're packaging into the archive
+
+command: tar -tvf test_archive.tar
+
+			-This command lists (-t) the contents of the archive, verbosely (-v), from the file (-f) named test_archive.tar
+
+##Extracting Files from a tar Archive##
+
+command: mkdir extracted_tar
+
+command: tar -xvf test_archive.tar -C extracted_tar
+
+			-tar: The command we're using to extract the archive
+			-'-x': This option tells tar to extract files from an archive
+			-'-v': This makes the operation verbose, showing us each file as it's extracted
+			-'-f': This option specifies the name of the archive file to be operated on
+				   When extracting files, it should be followed by the path or name of the tar file to extract
+			-'-C extracted_tar': This option tells tar to change to the extracted_tar directory before extracting files
+
+	command: ls -R extract_tar
+
+				-This will show you the directory structure and files that were in the archive
+
+#tar breakdown#
+
+	The tar command in Linux is one of the most essential commands when it comes to file management
+
+	It is short for Tape Archive and is used to create and extract archive files
+
+	An archive file is a compressed file that contains one or more files bundled together for more accessible storage and portability
+
+	The tar command in Linux is used to create, extract, and manage archive files, often referred to as "tarballs"
+
+	It's a versatile tool for combining multiple files and directories into a single archive for easier storage and transfer
+
+	It can also be used to compress the archive using various compression algorithms
+
+##Tar Options##
+
+-c ? This creates an archive file.
+
+-x ? The option extracts the archive file.
+
+-f ? Specifies the filename of the archive file.
+
+-v ? This prints verbose information for any tar operation on the terminal.
+
+-t ? This lists all the files inside an archive file.
+
+-u ? This archives a file and then adds it to an existing archive file.
+
+-r ? This updates a file or directory located inside a .tar file
+
+-z ? Creates a tar file using gzip compression
+
+-j ? Create an archive file using the bzip2 compression
+
+-W ? The -w option verifies an archive file
+
+###Compressing Files with gzip###
+
+command: gpzip test_archive.tar
+
+			-This command will compress test_archive.tar and rename it to test_archive.tar.gz
+			-The original test_archive.tar file will be replaced by the compressed version
+
+command: ls -lh test_archive.tar.gz
+
+
+####Understanding the Difference Between Packaging and Compression####
+
+--Packaging (Archiving):
+
+		1. Purpose: To combine multiple files and directories into a single file.
+		2. What it does: Groups files together, adding some metadata.
+		3. Example tool: tar (Tape Archive)
+		4. Result: The total size of the archive is often slightly larger than the sum of the sizes of all files within it
+
+--Compression:
+
+		1. Purpose: To reduce the size of a file or an archive.
+		2. What it does: Applies algorithms to remove redundancy in data, making the file smaller.
+		3. Example tools: gzip, bzip2, xz
+		4. Result: The compressed file is smaller than the original, but requires decompression before use
+
+--Breakdown
+
+		1. In Linux, tar and gzip serve different, but often complementary, purposes
+		2. tar is primarily an archiver, combining multiple files and directories into a single file (an archive) without necessarily compressing them
+		3. gzip, on the other hand, is a compression tool that reduces the size of individual files
+		4. They are frequently used together, with tar creating the archive and gzip then compressing the resulting archive file
+		5. This is often seen with the .tar.gz (or .tgz) file extension
+##
+	command ex: 
+
+		tar -czvf test_combined.tar.gz test_dir
+
+			tar: The command used to create and manipulate archive files
+			-c: Create a new archive
+			-z: Compress the archive using gzip
+			-v: Verbosely list files processed (shows the progress in the terminal)
+			-f: Specifies the filename of the archive >> test_combined.tar.gz
+			test_dir: The directory you want to archive and compress
+
+	To view the contents of this compressed archive without extracting it
+
+	command ex:
+
+		tar -tzvf test_combined.tar.gz
+
+			tar: The command for working with tar archives
+			-t: List the contents of the archive
+			-z: Decompress the archive using gzip (since it's a .gz file
+			-v: Verbosely display the files being listed
+			-f: Specifies the filename of the archive (test_combined.tar.gz)
+
+		ls -R 
+		-R: This option stands for "recursive," meaning it will list not only the contents of the specified directory (extracted) but also all files and directories within any subdirectories
+
+#####Creating a Compressed Archive in One Step#####
+
+--While it's helpful to understand the separate steps of creating a tar archive and then compressing it, in practice, these steps are often combined
+
+	--The tar command has a built-in option to compress the archive using gzip as it's being created
+
+command: tar -czvf test_combined.tar.gz test_dir
+
+			-'-z': This option tells tar to compress the archive using gzip
+
+						-The resulting test_combined.tar.gz file is equivalent to what we created in the previous two steps, but we've done it all at once
+
+command: tar -tzvf test_combined.tar.gz
+
+			-'-z': option here tells tar that we're dealing with a gzip-compressed file
+
+##########################################
+Extracting Files from a Compressed Archive
+##########################################
+
+--It's important to know how to extract files from them
+
+command: mkdir extracted
+
+command: tar -xzvf test_combined.tar.gz -C extracted
+
+			-tar: The command we're using to extract the archive
+			-'-x': This option tells tar to extract files from an archive
+			-'-z': This option is needed because we're dealing with a gzip-compressed file
+			-'-v': This makes the operation verbose, showing us each file as it's extracted
+			-'-f': This is followed by the name of the archive file we want to extract from
+			-'-C extracted': This option tells tar to change to the extracted directory before extracting files
+
+command: ls -R extracted || tree extracted
+
+##########################################
+Using zip for Cross-Platform Compatibility
+##########################################
+
+--While tar and gzip are common in Linux and Unix-like systems
+--**the zip format is often used for better compatibility with Windows systems**
+
+(zip)
+command: zip -r test_archive.zip test_dir
+
+			-zip: The command to create a zip archive
+			-'-r': This option tells zip to work recursively, including all files and subdirectories
+			-test_archive.zip: This is the name we're giving to our zip file
+			-test_dir: This is the directory we're adding to the zip archive
+
+(unzip)
+command: unzip -d unzipped_files test_archive.zip
+
+			-'-d': option specifies the directory to unzip into
+					-If unzipped_files doesn't exist, unzip will create it
+
+##########################
+Viewing Disk Usage with df
+##########################
+
+--The df (disk free) command is your go-to tool for checking disk space usage on your Linux system
+
+command: df
+
+		- Filesystem: This column shows the name of the disk or partition
+		- 1K-blocks: This is the total size of the filesystem in 1-kilobyte blocks
+		- Used: This shows how much space is currently in use
+		- Available: This shows how much free space is left
+		- Use%: This shows the percentage of the filesystem that is in use
+		- Mounted on: This shows where in the directory tree the filesystem is mounted
+
+command: df -h
+
+		'-h': option stands for "human-readable"
+
+--If you want to check the space on a specific filesystem, you can specify it
+
+command: df -h /dev/vdb
+
+#################################
+Examining Directory Sizes with du
+#################################
+
+--The du command in Linux is used to estimate file space usage, displaying the disk space occupied by files and directories
+
+commands: 
+
+	du: Shows disk space usage for all subdirectories within the current directory
+
+	du <directory>: Shows disk space usage for the specified directory and its contents
+
+		ex: du -h test_dir
+
+	du <file>: Shows disk space usage for the specified file
+
+		ex: du -h prod_inventory.ini
+
+common options:
+
+	-a or --all: Displays disk usage for all files and directories, not just directories. 
+	-h or --human-readable: Displays sizes in a human-readable format (e.g., KB, MB, GB) instead of bytes. 
+	-s or --summarize: Displays only the total disk usage for each specified file or directory. 
+	-c or --total: Displays a grand total of disk usage for all specified files and directories. 
+	-d <depth> or --max-depth=<depth>: Limits the depth of the directory tree that du will traverse, useful for controlling the output. 
+	-x or --one-file-system: Restricts du to only display disk usage for the current file system, excluding mounted file systems. 
+	--time: Displays the last modified time of files and directories
+
+--While df gives us an overview of disk usage, sometimes we need to dig deeper
+
+	--That's where du (disk usage) comes in
+
+		-It helps us understand which directories and files are taking up the most space
+
+command: du ~
+
+command: du -h ~
+
+command: du -sh ~
+
+		- '-s': means "summarize"
+		- '~': represents your home directory
+
+command: du -h --max-depth=1 ~
+
+		-'The --max-depth=1': option limits how far du will recurse into subdirectories
+
+command: du -sh ~/*
+
+		-This will show the size of each item directly under your home directory
+
+command: du -h ~ | sort -rh | head -n 10
+
+		du -h ~: lists all files and directories in your home directory with their sizes
+		sort -rh: sorts this list in reverse order (largest first) and in human-readable format
+		head -n 10: shows only the first 10 lines of output
+		|: is a pipe, which passes the output of one command as input to the next
+
+####################################
+Creating and Managing a Virtual Disk
+####################################
+
+--Virtual disk is simply a file that acts like a physical disk drive
+
+		-Think of it like creating a container file that the operating system can treat as if it were a real hard drive
+
+--Important concepts:
+
+		1. Filesystem: Think of a filesystem as the way files and folders are organized on a disk
+			-It's like a filing system in an office - it determines how data is stored and retrieved
+			-Common Linux filesystems include ext4 (which we'll use), XFS, and btrfs
+			
+				Filesystem Breakdown:
+					
+					-EXT4, XFS, and Btrfs are popular Linux file systems, each with strengths and weaknesses
+						-EXT4 is a reliable, general-purpose option
+						-XFS excels in handling large files and high I/O workloads
+						-Btrfs offers advanced features like snapshots and copy-on-write, but its maturity is sometimes questioned
+
+				EXT4:
+				-Widely compatible, well-established, relatively simple to use, good performance for general-purpose tasks, and a reliable default choice for many Linux distributions
+				-Lacks some advanced features found in XFS and Btrfs, like checksumming and advanced volume management
+				-General-purpose computing, desktops, and situations where simplicity and compatibility are prioritized
+
+				XFS:
+				-Designed for high performance and scalability, particularly with large files and high I/O workloads, excellent for servers and data-intensive applications
+				-May not be as well-suited for smaller files or systems with limited resources
+				-Servers, video editing, databases, and other situations requiring high throughput and large file handling
+
+				Btrfs:
+				-Offers advanced features like snapshots, subvolumes, checksumming, data deduplication, and built-in RAID support
+				-Can be more complex to manage than EXT4, and some users report occasional stability issues, particularly in older versions or specific workloads, although it has matured significantly
+				-Users who need advanced features like snapshots and are comfortable with a more complex file system, or those who want to experiment with newer technologies
+
+		2. Mounting: Mounting is the process of making a filesystem accessible to the operating system
+			-When you mount a filesystem, you're telling Linux "make the contents of this disk available at this specific directory."
+			-*It's similar to:
+				-Plugging in a USB drive (the physical connection)
+				-Then telling the computer where to show its contents (the mount point)
+			-Mounting a filesystem means attaching it to a specified directory so that the operating system can access the data inside the filesystem
+
+		3. Partitions: A partition is a section of a disk that's treated as a separate unit
+			-Think of it like dividing a large hard drive into smaller, independent sections
+			
+			Reasons for partitioning include:
+
+				-Separating system files from user files
+				-Using different filesystems for different purposes
+				-Making backups easier
+				-Limiting the impact of disk failures
+
+#Creating a Virtual Disk
+
+-Below Command creates an empty file filled with zeros that we'll use as our virtual disk
+
+--command: dd if=/dev/zero of=virtual.img bs=1M count=256
+
+		-dd: is a utility for copying and converting files
+		-if=/dev/zero: "input file is /dev/zero" (a special file that provides endless zeros)
+		-of=virtual.img: "output file is virtual.img" (our new virtual disk file)
+		-bs=1M: sets the block size to 1 megabyte (how much data to copy at once)
+		-count=256 means copy 256 blocks (resulting in a 256MB file)
+
+--command: ls -lh virtual.img || *command to verify file size*
+
+#Formatting the virtual disk with an ext4 filesystem
+
+	-This command is typically used when you want to prepare a disk image for use with virtual machines or for testing purposes
+	-After running this command, you can mount virtual.img to access the filesystem
+
+--command: sudo mkfs.ext4 virtual.img
+
+		-sudo: Runs the command with superuser (root) privileges, which is often required for filesystem operations
+		-mkfs.ext4: This is the command to create an ext4 filesystem. mkfs stands for "make filesystem," and ext4 specifies the type of filesystem
+		-virtual.img: This is the name of the file where the filesystem will be created acting like a virtual disk
+
+#Creating a Mount Point#
+
+-Next, we need to create a mount point. This is the directory where the contents of our virtual disk will appear:
+
+--command: sudo mkdir /mnt/virtualdisk
+
+#Mount the virtual disk#
+
+--command: sudo mount -o loop virtual.img /mnt/virtualdisk
+
+		-sudo: Runs the command with superuser (root) privileges, which is often required for mounting filesystems
+		-mount: The command used to attach filesystems to the directory tree
+		'-o loop': This option tells the mount command to treat the file as a block device, allowing you to mount disk image files
+		-virtual.img: The disk image file you want to mount
+		-/mnt/virtualdisk: The directory where the image will be mounted also ensure this directory exists before running the command
+
+			verification command: mount | grep virtualdisk
+
+#Now that it's mounted, we can use it like any other directory#
+
+--command: sudo touch /mnt/virtualdisk/testfile
+
+--command: ls /mnt/virtualdisk
+
+#When you're done using the virtual disk, you should unmount it#
+
+-Unmounting removes the filesystem from that directory, ensuring that the operating system finishes all pending read and write operations before detaching it
+
+	-Failing to unmount properly can lead to data corruption
+
+-This process of creating, formatting, and mounting a virtual disk is very similar to what happens when you plug in a new hard drive or USB stick
+
+	-The main difference is that we're doing everything with a file instead of a physical device
+
+--command: sudo umount /mnt/virtualdisk
+
+*Mounting* a filesystem means attaching it to a specified directory so that the operating system can access the data inside the filesystem
+
+*Unmounting* removes the filesystem from that directory, ensuring that the operating system finishes all pending read and write operations before detaching it
+
+
+###################################
+Managing Disk Partitions with fdisk
+###################################
+
+--In a real system, before you can create a filesystem, you often need to create partitions
+
+--command: sudo fdisk -l
+
+	-This command will display information about all disk devices and their partitions
+
+--command: sudo fdisk -l virtual.img
+
+	-This will show you the partition table of the virtual disk
+
+*In a real system, you would use fdisk interactively to create, delete, or modify partitions*
+
+	-You'd start fdisk with sudo fdisk /dev/sdX (replace X with the appropriate letter for the disk you want to partition)
+	-You'd use the command 'n' to create a new partition
+	-'d' would delete a partition
+	-'t' would change a partition's system id (which indicates the partition's intended use)
+	-'w' would write the changes and exit
+
+###############################
+Executing Commands Sequentially
+###############################
+
+--In Linux, you can run multiple commands one after another in a single line
+
+	-This is especially useful when you want to perform a series of related tasks
+
+--command: date && ls ~
+
+	-date: This shows the current date and time
+	-&&: This symbol means "and". It tells Linux to run the next command only if the first one succeeds
+	-ls ~: This lists the contents of your home directory (the ~ symbol represents your home directory)
+
+##Conditional Command Execution##
+
+--Conditional operators are used to control command execution based on the success or failure of previous commands
+
+--command: which cowsay && cowsay "Hello, Labex" || echo "cowsay is not installed"
+
+	-which cowsay: checks if the cowsay program is installed
+	-&&: is a logical AND operator that executes the next command only if the previous command succeeds
+	-cowsay "Hello, LabEx": displays an ASCII art cow saying "Hello, LabEx."
+	-||: is a logical OR operator that executes the next command only if the previous command fails
+	-echo "cowsay is not installed": prints a message indicating that cowsay is not installed
+
+##Introduction to Pipelines##
+
+--Pipelines are a powerful feature in Linux that allow you to connect the output of one command to the input of another
+
+--command: ls -l /etc | less
+
+	-ls -l /etc: Lists the contents of the /etc directory in long format
+	-'|': Sends the output of the previous command to the next command
+	-less: A program that lets you scroll through text
+
+--command: ls -l /etc | grep '^d' | wc -l
+
+	-ls -l /etc: Lists the contents of /etc in long format
+	grep '^d': Filters for lines starting with 'd' (which indicate directories)
+	wc -l: Counts the number of lines (which is now the number of directories)
+
+##Using cut to Extract Fields##
+
+--The cut command is useful for extracting specific parts of each line of a file
+
+--command: cut -d: f1,6 /etc/passwd | head -n 5
+
+	-cut: The command to extract portions of lines
+	-'-d:': Use : as the delimiter (the character that separates fields)
+	-'-f1,6': Extract the 1st and 6th fields (username and home directory)
+	'|': Pipe the output to the next command
+	-head -n 5: Show only the first 5 lines of output
+
+##Combining grep with Pipelines and Command Sequences##
+
+--command: grep "PATH" ~/.zshrc | wc -l
+
+	-This pipeline first uses grep to find lines with "PATH", then pipes the output to wc -l to count the lines
+
+--command: grep "PATH" ~/.zshrc && grep "HOME" ~/.zshrc
+
+	-This will show lines containing "HOME" only if lines containing "PATH" were found
+
+--command: grep "bin" /etc/passwd | sort | head -n 5
+
+	-This pipeline does three things:
+		-Finds lines containing "bin"
+		-Sorts these lines alphabetically
+		-Displays only the first 5 lines of the result
+
+--command: nano lab_command_practice.sh
+
+grep "sh" /etc/passwd | wc -l | {
+  read count
+  [ $count -gt 5 ] && grep "sh" /etc/passwd || echo "Found $count lines, not enough to display."
+}
+
+	-command: sudo chmod +x lab_command_practice
+	-command: ./lab_command_practice
+
+	-This complex command does the following:
+		-Searches for lines containing "sh"
+		-Counts these lines
+		-If the count is greater than 5, it displays the lines
+		-If the count is 5 or less, it shows a message with the count
+
+##Counting with wc##
+
+--The wc (word count) command is useful for counting lines, words, and characters in text
+
+--command: wc -l /etc/passwd
+
+	-The -l option tells wc to count lines and you should see a number followed by the filename
+
+--command: head -n 10 /etc/passwd | wc -w
+
+	-head -n 10 /etc/passwd: Gets the first 10 lines of the file
+	-wc -w: Counts the words in those lines
+
+##Sorting with sort##
+
+--The sort command is used to sort lines of text
+
+--command: sort -t: -k3 -n /etc/passwd | head -n 5
+
+	-t:: Use : as the field separator
+	-k3: Sort based on the third field
+	-n: Sort numerically (instead of alphabetically)
+	-'| head -n 5': Show only the first 5 lines of output
+
+##Removing Duplicates with uniq##
+
+--The uniq command is used to remove or identify duplicate lines in sorted text
+
+--command: cut -d -f7 /etc/passwd | sort | uniq
+
+	-'cut -d': -f7 /etc/passwd: Extracts the 7th field (the shell) from each line
+	-sort: Sorts the lines alphabetically
+	-uniq: Removes duplicate lines
+
+--command: cut -d: -f7 /etc/passwd | sort | uniq -c
+
+	-The -c option prefixes lines with the number of occurrences
+
+##Practice Scenario##
+
+--command: grep "Detected enemy vessel" /home/labex/project/sensor_data.txt | sort -k1,1 | uniq > /home/labex/project/processed_sensor_data.txt
+
+	"grep "Detected enemy vessel" /home/labex/project/sensor_data.txt"
+		-This command filters the input file, keeping only lines that contain the phrase "Detected enemy vessel"
+		-It addresses Task 1: filtering out extraneous sensor log entries
+
+	"| sort -k1,1"
+		-The pipe (|) sends the output of grep to the sort command.
+		-sort -k1,1 arranges the lines based on the first field (the timestamp)
+		-This is more precise than just sort as it ensures we're sorting specifically by the timestamp
+		-This fulfills Task 2: sorting the entries by their timestamp
+
+	"| uniq"
+		-Another pipe sends the sorted output to the uniq command
+		-uniq removes any duplicate lines, keeping only unique entries
+		-This accomplishes Task 3: removing duplicate records
+
+	"> /home/labex/project/processed_sensor_data.txt"
+		-The '>' operator redirects the final output to the file processed_sensor_data.txt in the specified directory
+		-This meets the requirement of saving the processed data to the correct file and location
+
+####################
+Using the tr Command
+####################
+
+--The tr command, short for "translate", is a powerful tool used to translate or delete characters in a text stream
+
+##Delete specific characters from a string##
+
+--command: echo 'hello labex' | gr -d 'olh'
+
+	-echo 'hello labex': outputs the text "hello labex"
+	-'| (pipe) symbol': sends this output to the tr command
+	-tr -d 'olh': tells tr to delete (-d) any 'o', 'l', or 'h' characters it finds
+
+##Remove duplicate characters##
+
+--command: echo 'hello' | tr -s 'l'
+	-This command will squeeze (-s) or remove duplicates of the letter 'l' in the input string
+
+--command: echo 'balloon' | tr -s 'o'
+	-You should see ballon as the output; the duplicate 'o' has been squeezed into a single 'o'
+
+##Convert text to uppercase##
+
+--command: echo 'hello labex' | tr '[:lower:]' '[:upper:]'
+
+	-This command will convert all lowercase letters to uppercase. Here's what's happening:
+		-'[:lower:]': is a character class that represents all lowercase letters
+		-'[:upper:]': is a character class that represents all uppercase letters
+		-The command tells tr to replace any character in the first set with the corresponding character in the second set
+
+--command: echo 'hello world' | tr 'ol' 'OL'
+
+###########################
+Exploring the 'col' Command
+###########################
+
+--The col command is used to filter reverse line feeds from input
+
+	-It's particularly useful for converting tabs to spaces and vice versa
+	-This command is often used when dealing with files that might have inconsistent formatting, especially when moving files between different operating systems
+
+--command: cat -A /etc/protocols | head -n 10
+
+	-cat: is used to display the contents of a file
+	-A: tells cat to show all characters, including non-printing ones
+	-/etc/protocols: is the file we're looking at (it's a system file that lists internet protocols)
+	-'|': pipes the output to the next command
+	-'head -n 10': shows only the first 10 lines of the output
+
+##Use col to convert these tabs to spaces##
+
+--command: cat /etc/protocols | col -x | cat -A | head -n 10
+
+	-cat /etc/protocols: outputs the content of the file
+	-'|': pipes this output to col
+	-'col -x': converts tabs to spacesand the -x option tells col to convert tabs to spaces
+	-'|': pipes this output to cat -A, which shows all characters
+	-'head -n 10': shows only the first 10 lines
+
+######################
+Using the join Command
+######################
+
+--The join command is used to join lines of two files on a common field. It's similar to a database join operation
+
+	-This command is particularly useful when you have related data split across multiple files and you want to combine them based on a common key or identifier
+
+--command: echo -e '1 apple\n2 banana\n3 cherry" > fruits.txt >> write on line 1 apple (\n2)create a new line and write banana (\n3) create a new line and write cherry
+
+	-echo: is used to output text
+	-'-e': enables interpretation of backslash escapes
+	-'\n': represents a new line
+	-'>': redirects the output to a file named fruits.txt
+
+--command: echo -e "1 red\n2 yellow\n3 red" > colors.txt
+
+##Now, let's join these files##
+
+--command: join fruits.txt colors.txt
+
+	-This command will join the lines from both files based on the first field (the number)
+
+		Output:
+		1 apple red
+		2 banana yellow
+		3 cherry red
+	
+	-The join command matched the lines based on the first field (the numbers 1, 2, 3) and combined the rest of the fields from both files
+
+##You can also specify which fields to use for joining##
+
+--command: join -1 2 -2 2 <(sort -k2 fruits.txt) <(sort -k2 color.txt)
+
+	-'-1 2': tells join to use the second field of the first file for joining
+	-'-2 2': tells join to use the second field of the second file for joining
+	-'<(...)': is process substitution, allowing us to use the output of a command where a filename is expected
+	-'sort -k2': sorts the file based on the second field
+	-We need to sort the files first because join expects the input to be sorted on the join fields
+	-This command might not produce any output if there are no matching second fields between the two files
+
+##############################
+Working with the paste Command
+##############################
+
+--The paste command is used to merge lines of files. Unlike join, it doesn't require a common field
+
+	-It's useful when you want to combine files side-by-side or create a table-like output from multiple files
+
+--command: echo -e "apple\nbanana\ncherry" > fruits.txt
+--command: echo -e "red\nyellow\nred" > colors.txt
+--command: echo -e "sweet\nsweet\nsweet" > tastes.txt
+
+##Use paste to merge these files##
+
+--command: paste fruits.txt colors.txt tastes.txt
+
+	-This command will merge the lines from all three files side by side
+
+##Specify a different delimiter##
+
+--command: paste -d ':' fruits.txt colors.txt tastes.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/ (root): The topmost directory, the foundation of the entire file system
+
+/bin: Contains essential user commands like ls, cp, etc
+
+/boot: Stores files needed for booting the system, like the kernel
+
+/dev: Contains device files representing hardware components
+
+/etc: Stores system-wide configuration files
+
+/home: Each user has a directory here for personal files and settings
+
+/lib: Contains shared library files used by programs
+
+/media: Used for mounting removable media like USB drives
+
+/mnt: A temporary mount point, often used for mounting file systems
+
+/proc: A virtual filesystem providing information about running processes and the kernel
+
+/root: The home directory for the root user
+
+/sbin: Contains system administration binaries, typically for the root user
+
+/tmp: A directory for temporary files, often cleared on reboot
+
+/usr: Contains user-related programs, libraries, and documentation
+
+/var: Stores variable data like log files and databases
+
+##whatis command:
+
+	command: whatis <keyword> 	whatis ls
+	command: man -k <keyword> 	man -k copy
+
+###################
+Gzip vs bzip2 vs xz
+###################
+
+Gzip, bzip2, and xz are all compression utilities, but they differ in their speed and compression ratios
+
+	Gzip is the fastest but offers the lowest compression
+
+		while xz is the slowest but provides the highest compression
+
+			Bzip2 falls in between
+
+				The best choice depends on the specific needs of the user, balancing speed and storage space
+
+--Gzip
+
+	Gzip:
+		Strengths: Fast compression and decompression, high availability (widely supported), good for general-purpose compression. 
+		Weaknesses: Lower compression ratio compared to bzip2 and xz. 
+		Use Cases: Ideal for quick archiving and when speed is a priority, especially for smaller files
+
+--Bzip2:
+		Strengths: Better compression ratio than gzip, suitable for larger files. 
+		Weaknesses: Slower than gzip, but still faster than xz for compression. 
+		Use Cases: Good for situations where you need better compression than gzip but still want reasonable speeds
+
+--XZ:
+		Strengths: Highest compression ratio, very efficient for large files. 
+		Weaknesses: Slowest compression and decompression, potentially resource-intensive. 
+		Use Cases: Best suited for archiving large files where space savings are crucial and speed is less of a concern
+
