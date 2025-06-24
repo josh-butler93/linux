@@ -2,107 +2,632 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Linux Command Reference</title>
+    <title>Linux Builds & Install Guides - Matrix Terminal</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
-        #sidebar {
-            width: 220px; background: #222; color: #fff; height: 100vh; float: left; padding-top: 20px;
+        body {
+            background: #111;
+            color: #00ff00;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        #sidebar h2 { color: #8f8; text-align: center; }
-        #sidebar ul { list-style: none; padding: 0; }
-        #sidebar li { padding: 10px 20px; cursor: pointer; }
-        #sidebar li:hover { background: #444; }
-        #main {
-            margin-left: 220px; padding: 40px;
+        .main {
+            display: flex;
+            gap: 40px;
         }
-        #computer {
-            display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;
+        .sidebar {
+            background: #181818;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 260px;
+            box-shadow: 0 0 20px #00ff0055;
+            height: 600px;
+            overflow-y: auto;
         }
-        .computer-img {
-            width: 120px; height: 80px; background: #2ecc40; border-radius: 10px 10px 5px 5px;
-            display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
-        }
-        .keyboard {
-            width: 100px; height: 20px; background: #333; border-radius: 3px;
-        }
-        #search-bar {
-            width: 300px; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;
+        .tab {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
         }
-        #results {
-            background: #fff; border-radius: 5px; padding: 20px; min-height: 100px;
+        .tab-btn {
+            background: #222;
+            color: #00ff00;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 6px #00ff0011;
+            outline: none;
+            transition: background 0.2s;
+        }
+        .tab-btn.active, .tab-btn:hover {
+            background: #00ff0033;
+            color: #fff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .sidebar h2 {
+            color: #00ff00;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 15px;
+        }
+        .section-title {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .section-commands {
+            display: none;
+            margin-left: 15px;
+        }
+        .build-section {
+            margin-bottom: 15px;
+        }
+        .build-title {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .build-content {
+            display: none;
+            margin-left: 15px;
+            margin-bottom: 10px;
+        }
+        .cmd {
+            margin: 2px 0;
+            padding-left: 8px;
+            font-size: 1em;
+            word-break: break-all;
+        }
+        .cmd.note {
+            color: #baffba;
+            font-size: 0.97em;
+            margin: 6px 0 8px 0;
+            padding-left: 0;
+        }
+        .cmd.note ul {
+            margin: 4px 0 4px 18px;
+            padding-left: 0;
+        }
+        .cmd.note li {
+            margin-bottom: 2px;
+        }
+        a {
+            color: #00ff00;
+        }
+        .computer {
+            background: #222;
+            border-radius: 20px 20px 10px 10px;
+            box-shadow: 0 0 40px #00ff0033;
+            padding: 30px 40px 20px 40px;
+            min-width: 500px;
+            position: relative;
+        }
+        .screen-content {
+            background: #111;
+            border-radius: 10px;
+            padding: 30px 20px 20px 20px;
+            box-shadow: 0 0 20px #00ff0022 inset;
+            min-height: 250px;
+        }
+        .terminal-input {
+            width: 100%;
+            background: #222;
+            color: #00ff00;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            padding: 10px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .results {
+            min-height: 60px;
+        }
+        .keyboard {
+            background: #222;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px #00ff0022;
+            margin-top: -10px;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .key {
+            background: #181818;
+            color: #00ff00;
+            border-radius: 4px;
+            margin: 2px;
+            padding: 8px 10px;
+            font-size: 1em;
+            box-shadow: 0 2px 6px #00ff0011;
+            min-width: 24px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <h2>Sections</h2>
-        <ul id="sections-list">
-            <li onclick="filterSection('networking')">Networking</li>
-            <li onclick="filterSection('os_version')">OS Version</li>
-            <li onclick="filterSection('file_management')">File Management</li>
-            <li onclick="filterSection('processes')">Processes</li>
-            <!-- Add more sections as needed -->
-        </ul>
-    </div>
-    <div id="main">
-        <div id="computer">
-            <div class="computer-img">
-                <!-- Simple SVG for green computer -->
-                <svg width="80" height="60">
-                    <rect x="5" y="5" width="70" height="40" rx="6" fill="#27ae60" stroke="#222" stroke-width="2"/>
-                    <rect x="20" y="50" width="40" height="5" rx="2" fill="#222"/>
-                </svg>
+    <div class="main">
+        <!-- Sidebar with tabs -->
+        <div class="sidebar">
+            <div class="tab">
+                <button class="tab-btn active" onclick="showTab('commands')">Commands</button>
+                <button class="tab-btn" onclick="showTab('linuxbuilds')">Linux Builds</button>
             </div>
-            <div class="keyboard"></div>
+            <!-- Commands Tab Content -->
+            <div class="tab-content active" id="commands">
+                <h2>Command Groups</h2>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('networking')">Networking</div>
+                    <div class="section-commands" id="networking">
+                        <div>ifconfig</div>
+                        <div>ip</div>
+                        <div>ping</div>
+                        <div>netstat</div>
+                        <div>tcpdump</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('osversion')">OS Version & System Info</div>
+                    <div class="section-commands" id="osversion">
+                        <div>lsb_release -a</div>
+                        <div>cat /etc/os-release</div>
+                        <div>uname -r</div>
+                        <div>hostnamectl</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('filesystem')">Filesystem & Directories</div>
+                    <div class="section-commands" id="filesystem">
+                        <div>df -h</div>
+                        <div>du -sh *</div>
+                        <div>lsblk</div>
+                        <div>tree /</div>
+                        <div>ls /home</div>
+                        <div>ls /etc</div>
+                        <div>ls /bin</div>
+                        <div>cd / && ls -l</div>
+                        <div>cd ~ && ls -l</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('usersgroups')">Users & Groups</div>
+                    <div class="section-commands" id="usersgroups">
+                        <div>sudo adduser &lt;username&gt;</div>
+                        <div>ls /home</div>
+                        <div>groups &lt;username&gt;</div>
+                        <div>id &lt;username&gt;</div>
+                        <div>cat /etc/group | sort</div>
+                        <div>cat /etc/group | grep -E "labex"</div>
+                        <div>sudo groupadd &lt;group&gt;</div>
+                        <div>sudo usermod -aG &lt;group&gt; &lt;user&gt;</div>
+                        <div>sudo useradd -g my_group new_user</div>
+                        <div>sudo useradd -m -d /home/jack -g dev -G labex jack</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('permissions')">Permissions & Ownership</div>
+                    <div class="section-commands" id="permissions">
+                        <div>ls -l /home</div>
+                        <div>sudo chown jack:jack /home/labex/testfile</div>
+                        <div>sudo chmod 750 /home/labex/testfile</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('files')">Files & Redirection</div>
+                    <div class="section-commands" id="files">
+                        <div>echo "Hello, Linux" &gt; hello.txt</div>
+                        <div>ls *.txt</div>
+                        <div>touch note_{1..5}.txt</div>
+                        <div>ls note*</div>
+                        <div>mv hello_copy.txt ..</div>
+                        <div>cat &lt;file&gt;</div>
+                        <div>cat &lt;file&gt; &gt; &lt;newfile&gt;</div>
+                        <div>echo 'hello labex' &gt; redirect</div>
+                        <div>echo 'labex.io' &gt;&gt; redirect</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('findsearch')">Finding & Searching</div>
+                    <div class="section-commands" id="findsearch">
+                        <div>find . -name "*.txt"</div>
+                        <div>sudo find / -name "passwd"</div>
+                        <div>find ~ -size +1M</div>
+                        <div>find ~ -mtime -1</div>
+                        <div>apropos password</div>
+                        <div>apropos file | grep create</div>
+                        <div>whatis &lt;keyword&gt;</div>
+                        <div>man -k &lt;keyword&gt;</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('variables')">Variables & Environment</div>
+                    <div class="section-commands" id="variables">
+                        <div>my_var="Hello, Linux"</div>
+                        <div>echo $my_var</div>
+                        <div>export MY_ENV_VAR="This is an environment variable"</div>
+                        <div>echo $PATH</div>
+                        <div>export PATH="$PATH:$HOME/my_scripts"</div>
+                        <div>unset MY_ENV_VAR</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('compression')">Compression & Archiving</div>
+                    <div class="section-commands" id="compression">
+                        <div>tar -cvf test_archive.tar test_dir</div>
+                        <div>tar -tvf test_archive.tar</div>
+                        <div>tar -xvf test_archive.tar -C extracted_tar</div>
+                        <div>tar -czvf test_combined.tar.gz test_dir</div>
+                        <div>tar -tzvf test_combined.tar.gz</div>
+                        <div>tar -xzvf test_combined.tar.gz -C extracted</div>
+                        <div>zip -r test_archive.zip test_dir</div>
+                        <div>unzip -d unzipped_files test_archive.zip</div>
+                        <div>gzip test_archive.tar</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('disk')">Disk & Partition Management</div>
+                    <div class="section-commands" id="disk">
+                        <div>df -h</div>
+                        <div>df -h /dev/vdb</div>
+                        <div>du -h ~</div>
+                        <div>du -sh ~/*</div>
+                        <div>sudo fdisk -l</div>
+                        <div>sudo fdisk -l virtual.img</div>
+                        <div>dd if=/dev/zero of=virtual.img bs=1M count=256</div>
+                        <div>sudo mkfs.ext4 virtual.img</div>
+                        <div>sudo mkdir /mnt/virtualdisk</div>
+                        <div>sudo mount -o loop virtual.img /mnt/virtualdisk</div>
+                        <div>sudo umount /mnt/virtualdisk</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('textprocessing')">Text Processing & Pipelines</div>
+                    <div class="section-commands" id="textprocessing">
+                        <div>ls -l /etc | less</div>
+                        <div>ls -l /etc | grep '^d' | wc -l</div>
+                        <div>cut -d: -f1,6 /etc/passwd | head -n 5</div>
+                        <div>grep "PATH" ~/.zshrc | wc -l</div>
+                        <div>grep "bin" /etc/passwd | sort | head -n 5</div>
+                        <div>cut -d: -f7 /etc/passwd | sort | uniq</div>
+                        <div>cut -d: -f7 /etc/passwd | sort | uniq -c</div>
+                        <div>wc -l /etc/passwd</div>
+                        <div>head -n 10 /etc/passwd | wc -w</div>
+                        <div>sort -t: -k3 -n /etc/passwd | head -n 5</div>
+                        <div>echo 'hello labex' | tr -d 'olh'</div>
+                        <div>echo 'hello' | tr -s 'l'</div>
+                        <div>echo 'hello labex' | tr '[:lower:]' '[:upper:]'</div>
+                        <div>cat -A /etc/protocols | head -n 10</div>
+                        <div>cat /etc/protocols | col -x | cat -A | head -n 10</div>
+                        <div>join fruits.txt colors.txt</div>
+                        <div>paste fruits.txt colors.txt tastes.txt</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title" onclick="toggleSection('shortcuts')">Shortcuts & Misc</div>
+                    <div class="section-commands" id="shortcuts">
+                        <div>ctrl + L (clear screen)</div>
+                        <div>type cd</div>
+                        <div>type ls</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Linux Builds Tab Content -->
+            <div class="tab-content" id="linuxbuilds">
+                <h2>Linux Builds</h2>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('nagios')">Nagios</div>
+                    <div class="build-content" id="nagios">
+                        <div class="cmd"><b>Use Case:</b> Monitoring servers and services</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install nagios4</div>
+                        <div class="cmd"># Configure /etc/nagios4/ as needed</div>
+                        <div class="cmd"># Start/enable nagios: sudo systemctl enable --now nagios4</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Nagios is used to monitor system health, services, and network resources.</li>
+                                <li>After installation, edit configuration files in <code>/etc/nagios4/</code> to define hosts and services.</li>
+                                <li>Access the web UI for monitoring dashboards.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('nginx')">Nginx</div>
+                    <div class="build-content" id="nginx">
+                        <div class="cmd"><b>Use Case:</b> Web server, reverse proxy</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install nginx</div>
+                        <div class="cmd"># Start/enable nginx: sudo systemctl enable --now nginx</div>
+                        <div class="cmd"># Default web root: /var/www/html</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Nginx serves static and dynamic web content, and can act as a reverse proxy for load balancing.</li>
+                                <li>Configuration files are in <code>/etc/nginx/</code>.</li>
+                                <li>Check status: <code>systemctl status nginx</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('docker')">Docker</div>
+                    <div class="build-content" id="docker">
+                        <div class="cmd"><b>Use Case:</b> Containerization, running apps in isolated environments</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install docker.io</div>
+                        <div class="cmd">sudo systemctl enable --now docker</div>
+                        <div class="cmd">sudo usermod -aG docker &lt;username&gt;</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Docker allows you to run applications in containers, isolated from the host system.</li>
+                                <li>After installation, add your user to the <code>docker</code> group to run Docker without <code>sudo</code>.</li>
+                                <li>Common commands: <code>docker run</code>, <code>docker ps</code>, <code>docker images</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('ansible')">Ansible</div>
+                    <div class="build-content" id="ansible">
+                        <div class="cmd"><b>Use Case:</b> Automation, configuration management</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install ansible</div>
+                        <div class="cmd"># Inventory: /etc/ansible/hosts</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Ansible automates software provisioning, configuration management, and application deployment.</li>
+                                <li>Uses YAML playbooks to define automation tasks.</li>
+                                <li>Inventory file lists managed hosts.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('jenkins')">Jenkins</div>
+                    <div class="build-content" id="jenkins">
+                        <div class="cmd"><b>Use Case:</b> CI/CD automation</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install openjdk-11-jre</div>
+                        <div class="cmd">wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -</div>
+                        <div class="cmd">sudo sh -c 'echo deb https://pkg.jenkins.io/debian binary/ &gt; /etc/apt/sources.list.d/jenkins.list'</div>
+                        <div class="cmd">sudo apt update</div>
+                        <div class="cmd">sudo apt install jenkins</div>
+                        <div class="cmd">sudo systemctl enable --now jenkins</div>
+                        <div class="cmd"># Web UI: http://localhost:8080</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Jenkins automates building, testing, and deploying software projects.</li>
+                                <li>Access the web UI to configure jobs and pipelines.</li>
+                                <li>Requires Java (OpenJDK recommended).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="build-section">
+                    <div class="build-title" onclick="toggleBuild('nfs')">AD NFS Integration</div>
+                    <div class="build-content" id="nfs">
+                        <div class="cmd"><b>Use Case:</b> Mounting NFS shares with Active Directory authentication</div>
+                        <div class="cmd"># See: <a href="https://www.reddit.com/r/sysadmin/comments/7hvy1c/sssd_ad_and_autofs_getting_autofs_to_mount_nfs/" target="_blank" style="color:#00ff00;">Reddit Guide</a></div>
+                        <div class="cmd"># Install: sudo apt install sssd autofs nfs-common</div>
+                        <div class="cmd"># Configure /etc/sssd/sssd.conf and /etc/autofs/auto.master</div>
+                        <div class="cmd note">
+                            <b>Notes:</b>
+                            <ul>
+                                <li>Integrates Linux with Active Directory for authentication and automounting NFS shares.</li>
+                                <li>Requires configuration of SSSD and autofs.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <input id="search-bar" type="text" placeholder="Type a command or description..." oninput="searchCommands()"/>
-        <div id="results">
-            <!-- Command results will appear here -->
+        <!-- Computer screen and keyboard -->
+        <div>
+            <div class="computer">
+                <div class="screen-content">
+                    <div style="text-align:center; font-size:2em; margin-bottom:20px;">🖥️ Linux Command Reference</div>
+                    <input class="terminal-input" id="search" placeholder="Type a command or keyword..." oninput="searchCommands()">
+                    <div class="results" id="results"></div>
+                </div>
+                <div class="keyboard">
+                    <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div>
+                    <div class="key">T</div><div class="key">Y</div><div class="key">U</div><div class="key">I</div>
+                    <div class="key">O</div><div class="key">P</div><div class="key">A</div><div class="key">S</div>
+                    <div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div>
+                    <div class="key">J</div><div class="key">K</div><div class="key">L</div><div class="key">Z</div>
+                    <div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div>
+                    <div class="key">N</div><div class="key">M</div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
-        // Example command data
+        // Tab switching
+        function showTab(tab) {
+            var tabs = document.querySelectorAll('.tab-btn');
+            var contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(function(btn, idx) {
+                if (btn.textContent.replace(/\s/g, '').toLowerCase().includes(tab)) {
+                    btn.classList.add('active');
+                    contents[idx].classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                    contents[idx].classList.remove('active');
+                }
+            });
+        }
+        // Expand/collapse command sections
+        function toggleSection(id) {
+            var el = document.getElementById(id);
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+        // Expand/collapse build sections
+        function toggleBuild(id) {
+            var el = document.getElementById(id);
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+        // Command search for this page
         const commands = [
-            { name: "ifconfig", section: "networking", description: "Configure network interfaces" },
-            { name: "ip", section: "networking", description: "Show/manipulate routing, devices, policy routing" },
-            { name: "uname -a", section: "os_version", description: "Show system information" },
-            { name: "lsb_release -a", section: "os_version", description: "Show Linux distribution info" },
-            { name: "ls", section: "file_management", description: "List directory contents" },
-            { name: "ps", section: "processes", description: "Report a snapshot of current processes" },
-            // Add more commands as needed
+            // Networking
+            { name: "ifconfig", group: "Networking", desc: "Configure network interfaces" },
+            { name: "ip", group: "Networking", desc: "Show/manipulate routing, devices, policy routing" },
+            { name: "ping", group: "Networking", desc: "Send ICMP ECHO_REQUEST to network hosts" },
+            { name: "netstat", group: "Networking", desc: "Network statistics" },
+            { name: "tcpdump", group: "Networking", desc: "Capture and analyze network traffic" },
+
+            // OS Version & System Info
+            { name: "lsb_release -a", group: "OS Version", desc: "Show Linux distribution info" },
+            { name: "cat /etc/os-release", group: "OS Version", desc: "Show OS release info" },
+            { name: "uname -r", group: "OS Version", desc: "Show kernel version" },
+            { name: "hostnamectl", group: "OS Version", desc: "Show or set host name and related info" },
+
+            // Filesystem & Directories
+            { name: "df -h", group: "Filesystem", desc: "Show disk space usage (human-readable)" },
+            { name: "du -sh *", group: "Filesystem", desc: "Show directory sizes (summary, human-readable)" },
+            { name: "lsblk", group: "Filesystem", desc: "List block devices" },
+            { name: "tree /", group: "Filesystem", desc: "Visualize directory structure from root" },
+            { name: "ls /home", group: "Filesystem", desc: "List user home directories" },
+            { name: "ls /etc", group: "Filesystem", desc: "List system configuration files" },
+            { name: "ls /bin", group: "Filesystem", desc: "List essential command binaries" },
+            { name: "cd / && ls -l", group: "Filesystem", desc: "Navigate to root and list contents" },
+            { name: "cd ~ && ls -l", group: "Filesystem", desc: "Navigate to home and list contents" },
+
+            // Users & Groups
+            { name: "sudo adduser <username>", group: "Users & Groups", desc: "Create a new user" },
+            { name: "groups <username>", group: "Users & Groups", desc: "Show groups for a user" },
+            { name: "id <username>", group: "Users & Groups", desc: "Show UID, GID, and groups for a user" },
+            { name: "cat /etc/group | sort", group: "Users & Groups", desc: "List groups alphabetically" },
+            { name: "cat /etc/group | grep -E \"labex\"", group: "Users & Groups", desc: "Search for 'labex' in group file" },
+            { name: "sudo groupadd <group>", group: "Users & Groups", desc: "Create a new group" },
+            { name: "sudo usermod -aG <group> <user>", group: "Users & Groups", desc: "Add user to supplementary group" },
+            { name: "sudo useradd -g my_group new_user", group: "Users & Groups", desc: "Create user with primary group" },
+            { name: "sudo useradd -m -d /home/jack -g dev -G labex jack", group: "Users & Groups", desc: "Create user with home, primary and secondary groups" },
+
+            // Permissions & Ownership
+            { name: "ls -l /home", group: "Permissions", desc: "List permissions for home directory" },
+            { name: "sudo chown jack:jack /home/labex/testfile", group: "Permissions", desc: "Change file owner and group" },
+            { name: "sudo chmod 750 /home/labex/testfile", group: "Permissions", desc: "Set file permissions" },
+
+            // Files & Redirection
+            { name: "echo \"Hello, Linux\" > hello.txt", group: "Files", desc: "Write text to file" },
+            { name: "ls *.txt", group: "Files", desc: "List all .txt files" },
+            { name: "touch note_{1..5}.txt", group: "Files", desc: "Create multiple files" },
+            { name: "ls note*", group: "Files", desc: "List files starting with 'note'" },
+            { name: "mv hello_copy.txt ..", group: "Files", desc: "Move file to parent directory" },
+            { name: "cat <file>", group: "Files", desc: "Display file contents" },
+            { name: "cat <file> > <newfile>", group: "Files", desc: "Copy file contents" },
+            { name: "echo 'hello labex' > redirect", group: "Files", desc: "Redirect output to file" },
+            { name: "echo 'labex.io' >> redirect", group: "Files", desc: "Append output to file" },
+
+            // Finding & Searching
+            { name: "find . -name \"*.txt\"", group: "Finding", desc: "Find .txt files in current directory" },
+            { name: "sudo find / -name \"passwd\"", group: "Finding", desc: "Find 'passwd' file system-wide" },
+            { name: "find ~ -size +1M", group: "Finding", desc: "Find files larger than 1MB in home" },
+            { name: "find ~ -mtime -1", group: "Finding", desc: "Find files modified in last 24 hours" },
+            { name: "apropos password", group: "Finding", desc: "Find commands related to 'password'" },
+            { name: "apropos file | grep create", group: "Finding", desc: "Find commands related to file creation" },
+            { name: "whatis <keyword>", group: "Finding", desc: "Show short description of command" },
+            { name: "man -k <keyword>", group: "Finding", desc: "Search man pages for keyword" },
+
+            // Variables & Environment
+            { name: "my_var=\"Hello, Linux\"", group: "Variables", desc: "Create shell variable" },
+            { name: "echo $my_var", group: "Variables", desc: "Display variable value" },
+            { name: "export MY_ENV_VAR=\"This is an environment variable\"", group: "Variables", desc: "Create environment variable" },
+            { name: "echo $PATH", group: "Variables", desc: "Show PATH variable" },
+            { name: "export PATH=\"$PATH:$HOME/my_scripts\"", group: "Variables", desc: "Add directory to PATH" },
+            { name: "unset MY_ENV_VAR", group: "Variables", desc: "Unset environment variable" },
+
+            // Compression & Archiving
+            { name: "tar -cvf test_archive.tar test_dir", group: "Compression", desc: "Create tar archive" },
+            { name: "tar -tvf test_archive.tar", group: "Compression", desc: "List contents of tar archive" },
+            { name: "tar -xvf test_archive.tar -C extracted_tar", group: "Compression", desc: "Extract tar archive to directory" },
+            { name: "tar -czvf test_combined.tar.gz test_dir", group: "Compression", desc: "Create compressed tar.gz archive" },
+            { name: "tar -tzvf test_combined.tar.gz", group: "Compression", desc: "List contents of tar.gz archive" },
+            { name: "tar -xzvf test_combined.tar.gz -C extracted", group: "Compression", desc: "Extract tar.gz archive" },
+            { name: "zip -r test_archive.zip test_dir", group: "Compression", desc: "Create zip archive" },
+            { name: "unzip -d unzipped_files test_archive.zip", group: "Compression", desc: "Extract zip archive" },
+            { name: "gzip test_archive.tar", group: "Compression", desc: "Compress file with gzip" },
+
+            // Disk & Partition Management
+            { name: "df -h", group: "Disk", desc: "Show disk space usage" },
+            { name: "df -h /dev/vdb", group: "Disk", desc: "Show disk usage for specific device" },
+            { name: "du -h ~", group: "Disk", desc: "Show disk usage for home directory" },
+            { name: "du -sh ~/*", group: "Disk", desc: "Show size of each item in home" },
+            { name: "sudo fdisk -l", group: "Disk", desc: "List disk partitions" },
+            { name: "sudo fdisk -l virtual.img", group: "Disk", desc: "Show partition table of virtual disk" },
+            { name: "dd if=/dev/zero of=virtual.img bs=1M count=256", group: "Disk", desc: "Create virtual disk image" },
+            { name: "sudo mkfs.ext4 virtual.img", group: "Disk", desc: "Format virtual disk with ext4" },
+            { name: "sudo mkdir /mnt/virtualdisk", group: "Disk", desc: "Create mount point" },
+            { name: "sudo mount -o loop virtual.img /mnt/virtualdisk", group: "Disk", desc: "Mount virtual disk" },
+            { name: "sudo umount /mnt/virtualdisk", group: "Disk", desc: "Unmount virtual disk" },
+
+            // Text Processing & Pipelines
+            { name: "ls -l /etc | less", group: "Text Processing", desc: "View directory listing with pager" },
+            { name: "ls -l /etc | grep '^d' | wc -l", group: "Text Processing", desc: "Count directories in /etc" },
+            { name: "cut -d: -f1,6 /etc/passwd | head -n 5", group: "Text Processing", desc: "Extract username and home dir" },
+            { name: "grep \"PATH\" ~/.zshrc | wc -l", group: "Text Processing", desc: "Count lines with PATH" },
+            { name: "grep \"bin\" /etc/passwd | sort | head -n 5", group: "Text Processing", desc: "Find, sort, and show first 5 lines" },
+            { name: "cut -d: -f7 /etc/passwd | sort | uniq", group: "Text Processing", desc: "List unique shells" },
+            { name: "cut -d: -f7 /etc/passwd | sort | uniq -c", group: "Text Processing", desc: "Count unique shells" },
+            { name: "wc -l /etc/passwd", group: "Text Processing", desc: "Count lines in file" },
+            { name: "head -n 10 /etc/passwd | wc -w", group: "Text Processing", desc: "Count words in first 10 lines" },
+            { name: "sort -t: -k3 -n /etc/passwd | head -n 5", group: "Text Processing", desc: "Sort by third field numerically" },
+            { name: "echo 'hello labex' | tr -d 'olh'", group: "Text Processing", desc: "Delete characters from string" },
+            { name: "echo 'hello' | tr -s 'l'", group: "Text Processing", desc: "Squeeze duplicate characters" },
+            { name: "echo 'hello labex' | tr '[:lower:]' '[:upper:]'", group: "Text Processing", desc: "Convert to uppercase" },
+            { name: "cat -A /etc/protocols | head -n 10", group: "Text Processing", desc: "Show all characters in file" },
+            { name: "cat /etc/protocols | col -x | cat -A | head -n 10", group: "Text Processing", desc: "Convert tabs to spaces and show all characters" },
+            { name: "join fruits.txt colors.txt", group: "Text Processing", desc: "Join files on common field" },
+            { name: "paste fruits.txt colors.txt tastes.txt", group: "Text Processing", desc: "Merge files side by side" },
+
+            // Shortcuts & Misc
+            { name: "ctrl + L", group: "Shortcuts", desc: "Clear terminal screen" },
+            { name: "type cd", group: "Shortcuts", desc: "Show how 'cd' is interpreted" },
+            { name: "type ls", group: "Shortcuts", desc: "Show how 'ls' is interpreted" },
         ];
 
-        let currentSection = null;
-
-        function renderResults(filtered) {
-            const results = document.getElementById('results');
-            if (filtered.length === 0) {
-                results.innerHTML = "<em>No commands found.</em>";
+        function searchCommands() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const resultsDiv = document.getElementById('results');
+            if (!query) {
+                resultsDiv.innerHTML = '';
                 return;
             }
-            results.innerHTML = filtered.map(cmd =>
-                `<div><strong>${cmd.name}</strong>: ${cmd.description}</div>`
-            ).join('');
-        }
-
-        function searchCommands() {
-            const query = document.getElementById('search-bar').value.toLowerCase();
-            let filtered = commands.filter(cmd =>
-                (!currentSection || cmd.section === currentSection) &&
-                (cmd.name.toLowerCase().includes(query) || cmd.description.toLowerCase().includes(query))
+            const filtered = commands.filter(cmd =>
+                cmd.name.toLowerCase().includes(query) ||
+                cmd.desc.toLowerCase().includes(query) ||
+                cmd.group.toLowerCase().includes(query)
             );
-            renderResults(filtered);
+            if (filtered.length === 0) {
+                resultsDiv.innerHTML = '<div>No commands found.</div>';
+            } else {
+                resultsDiv.innerHTML = filtered.map(cmd =>
+                    `<div>
+                        <span style="color:#00ff00;font-weight:bold;">${cmd.name}</span>
+                        <span style="color:#0f0f0f;">|</span>
+                        <span style="color:#00ff88;">${cmd.group}</span>
+                        <div style="color:#baffba;font-size:0.95em;margin-bottom:10px;">${cmd.desc}</div>
+                    </div>`
+                ).join('');
+            }
         }
-
-        function filterSection(section) {
-            currentSection = section;
-            document.getElementById('search-bar').value = '';
-            searchCommands();
-        }
-
-        // Initial render
-        renderResults(commands);
     </script>
-</body>
-</html>
