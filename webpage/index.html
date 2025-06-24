@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linux Command Reference</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
+        #sidebar {
+            width: 220px; background: #222; color: #fff; height: 100vh; float: left; padding-top: 20px;
+        }
+        #sidebar h2 { color: #8f8; text-align: center; }
+        #sidebar ul { list-style: none; padding: 0; }
+        #sidebar li { padding: 10px 20px; cursor: pointer; }
+        #sidebar li:hover { background: #444; }
+        #main {
+            margin-left: 220px; padding: 40px;
+        }
+        #computer {
+            display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;
+        }
+        .computer-img {
+            width: 120px; height: 80px; background: #2ecc40; border-radius: 10px 10px 5px 5px;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+        }
+        .keyboard {
+            width: 100px; height: 20px; background: #333; border-radius: 3px;
+        }
+        #search-bar {
+            width: 300px; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        #results {
+            background: #fff; border-radius: 5px; padding: 20px; min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Sections</h2>
+        <ul id="sections-list">
+            <li onclick="filterSection('networking')">Networking</li>
+            <li onclick="filterSection('os_version')">OS Version</li>
+            <li onclick="filterSection('file_management')">File Management</li>
+            <li onclick="filterSection('processes')">Processes</li>
+            <!-- Add more sections as needed -->
+        </ul>
+    </div>
+    <div id="main">
+        <div id="computer">
+            <div class="computer-img">
+                <!-- Simple SVG for green computer -->
+                <svg width="80" height="60">
+                    <rect x="5" y="5" width="70" height="40" rx="6" fill="#27ae60" stroke="#222" stroke-width="2"/>
+                    <rect x="20" y="50" width="40" height="5" rx="2" fill="#222"/>
+                </svg>
+            </div>
+            <div class="keyboard"></div>
+        </div>
+        <input id="search-bar" type="text" placeholder="Type a command or description..." oninput="searchCommands()"/>
+        <div id="results">
+            <!-- Command results will appear here -->
+        </div>
+    </div>
+    <script>
+        // Example command data
+        const commands = [
+            { name: "ifconfig", section: "networking", description: "Configure network interfaces" },
+            { name: "ip", section: "networking", description: "Show/manipulate routing, devices, policy routing" },
+            { name: "uname -a", section: "os_version", description: "Show system information" },
+            { name: "lsb_release -a", section: "os_version", description: "Show Linux distribution info" },
+            { name: "ls", section: "file_management", description: "List directory contents" },
+            { name: "ps", section: "processes", description: "Report a snapshot of current processes" },
+            // Add more commands as needed
+        ];
+
+        let currentSection = null;
+
+        function renderResults(filtered) {
+            const results = document.getElementById('results');
+            if (filtered.length === 0) {
+                results.innerHTML = "<em>No commands found.</em>";
+                return;
+            }
+            results.innerHTML = filtered.map(cmd =>
+                `<div><strong>${cmd.name}</strong>: ${cmd.description}</div>`
+            ).join('');
+        }
+
+        function searchCommands() {
+            const query = document.getElementById('search-bar').value.toLowerCase();
+            let filtered = commands.filter(cmd =>
+                (!currentSection || cmd.section === currentSection) &&
+                (cmd.name.toLowerCase().includes(query) || cmd.description.toLowerCase().includes(query))
+            );
+            renderResults(filtered);
+        }
+
+        function filterSection(section) {
+            currentSection = section;
+            document.getElementById('search-bar').value = '';
+            searchCommands();
+        }
+
+        // Initial render
+        renderResults(commands);
+    </script>
+</body>
+</html>
