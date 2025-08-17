@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Essentials Test</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #e0e0e0; margin:0; padding:0;}
+h1 { text-align:center; padding:20px; background: linear-gradient(to right, #1b1b1b, #222222); color:#fff; text-shadow:1px 1px 3px #000; margin:0; font-size:2.5em; letter-spacing:1px;}
+h2 { font-size:1.8em; margin:20px 0 10px 0; border-bottom:2px solid #333; padding-bottom:5px; background: linear-gradient(90deg,#ff8c00,#ff0080); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:slideIn 0.7s ease-out;}
+@keyframes slideIn { from{opacity:0; transform:translateX(-20px);} to{opacity:1; transform:translateX(0);} }
+.question { background-color:#1e1e1e; border:1px solid #333; border-radius:8px; padding:20px; margin:20px auto; max-width:900px; box-shadow:0 4px 8px rgba(0,0,0,0.3); transition: transform 0.2s; }
+.question:hover { transform: scale(1.02); }
+.options button { display:block; width:100%; margin:8px 0; padding:12px; font-size:16px; background-color:#2b2b2b; border:1px solid #444; border-radius:6px; color:#e0e0e0; cursor:pointer; text-align:left; transition:all 0.2s; }
+.options button:hover { background-color:#3a3a3a; transform:scale(1.02);}
+.correct { background-color:#2e7d32 !important; color:#fff !important; }
+.incorrect { background-color:#c62828 !important; color:#fff !important; }
+.explanation { margin-top:12px; padding:10px; background-color:#2b2b2b; border-left:4px solid #888; border-radius:6px; color:#bbb; opacity:0; animation:fadeIn 0.5s forwards; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+#next-btn { display:none; margin:15px auto; padding:12px 25px; font-size:16px; border-radius:6px; border:none; background-color:#444; color:#e0e0e0; cursor:pointer; transition:all 0.2s; }
+#next-btn:hover { background-color:#555; }
+#result { text-align:center; font-size:1.5em; margin:30px 0; color:#00e676;}
+</style>
+</head>
+<body>
+<h1>Linux Essentials Test</h1>
+<div id="quiz-container"></div>
+<button id="next-btn" onclick="nextQuestion()">Next Question</button>
+<div id="result"></div>
+
+<script>
+const quizData=[
+/* Section 1: The Linux Community and a Career in Open Source (20 questions) */
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of the following is a benefit of open source software?", options:["You cannot modify it","You have access to the source code","It is always paid","It has no community support"], answer:1, explanation:"Open source software allows users to access, modify, and distribute the source code."},
+{section:"1. The Linux Community and a Career in Open Source", question:"What is the typical license used for Linux?", options:["MIT License","GNU General Public License (GPL)","Apache License","Creative Commons"], answer:1, explanation:"Linux is licensed under the GNU GPL, which ensures freedom to use, modify, and distribute."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which organization maintains Linux kernel development?", options:["Microsoft","The Linux Foundation","Apache","Red Hat"], answer:1, explanation:"The Linux Foundation oversees kernel development and promotes Linux usage."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Open source software allows users to:", options:["Access and modify code","Only use binaries","Never distribute it","Pay for source code"], answer:0, explanation:"Open source licenses allow viewing, modification, and redistribution."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of these is a Linux distribution?", options:["Windows 10","Ubuntu","macOS","Oracle"], answer:1, explanation:"Ubuntu is a popular Linux distribution."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of the following best describes open source?", options:["Closed code","Source code freely available","Subscription-only software","Proprietary code"], answer:1, explanation:"Open source software makes the source code publicly accessible."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Linux is used in:", options:["Web servers","Desktop PCs","Embedded devices","All of the above"], answer:3, explanation:"Linux is versatile and runs on servers, desktops, and embedded systems."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Who can contribute to open source projects?", options:["Only paid developers","Anyone","Only Linux Foundation staff","Only companies"], answer:1, explanation:"Open source projects accept contributions from anyone."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of these is a benefit of Linux?", options:["High cost","Flexibility","Closed source","No community support"], answer:1, explanation:"Linux is flexible, free, and has strong community support."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of these is a Linux desktop environment?", options:["GNOME","Windows Explorer","macOS Finder","Photoshop"], answer:0, explanation:"GNOME is a Linux desktop environment."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Open source promotes:", options:["Collaboration","Isolation","Profit-only","Proprietary control"], answer:0, explanation:"Open source encourages collaboration and shared development."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Linux kernel is:", options:["The OS itself","The core of the OS","A user application","A programming language"], answer:1, explanation:"The kernel is the core of Linux managing hardware and system resources."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which platform hosts open source code?", options:["GitHub","Netflix","Facebook","Windows Store"], answer:0, explanation:"GitHub hosts open source repositories."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which is a common open source license?", options:["GPL","Windows EULA","Proprietary License","App Store License"], answer:0, explanation:"GPL is a widely used open source license."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Linux distributions include:", options:["Kernel","Software packages","Desktop environments","All of the above"], answer:3, explanation:"Distributions bundle kernel, software, and desktop environments."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which is an advantage of Linux in servers?", options:["Stability","High cost","Proprietary","No community"], answer:0, explanation:"Linux is stable and reliable for server use."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which command line interface is common in Linux?", options:["Bash","PowerShell","Command Prompt","Terminal"], answer:0, explanation:"Bash is the default shell for most Linux systems."},
+{section:"1. The Linux Community and a Career in Open Source", question:"The Linux Foundation is:", options:["A company","A nonprofit supporting Linux","An open source project","A Linux distro"], answer:1, explanation:"It is a nonprofit that promotes Linux and open source."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Which of these is a common Linux server?", options:["Apache","IIS","Edge","Safari"], answer:0, explanation:"Apache is a widely used Linux web server."},
+{section:"1. The Linux Community and a Career in Open Source", question:"Linux is primarily written in:", options:["Python","C","Java","JavaScript"], answer:1, explanation:"The Linux kernel is written mostly in C."},
+
+/* Section 2: Finding Your Way on a Linux System (20 questions) */
+{section:"2. Finding Your Way on a Linux System", question:"Which command lists all files including hidden ones?", options:["ls -a","ls -l","ls -h","ls -r"], answer:0, explanation:"The -a switch with ls shows all files, including hidden files."},
+{section:"2. Finding Your Way on a Linux System", question:"Which command prints the current working directory?", options:["pwd","cd","ls","whoami"], answer:0, explanation:"pwd stands for 'print working directory' and shows full path."},
+{section:"2. Finding Your Way on a Linux System", question:"Change directory to /home using:", options:["cd /home","pwd /home","ls /home","mv /home"], answer:0, explanation:"cd /home changes the current working directory to /home."},
+{section:"2. Finding Your Way on a Linux System", question:"List files with details using:", options:["ls -l","ls -a","ls -r","ls -h"], answer:0, explanation:"ls -l shows detailed info including permissions, owner, size, date."},
+{section:"2. Finding Your Way on a Linux System", question:"Return to home directory:", options:["cd ~","pwd","ls","cd /root"], answer:0, explanation:"cd ~ returns to the user's home directory."},
+{section:"2. Finding Your Way on a Linux System", question:"Go up one directory level:", options:["cd ..","cd ~","cd /","ls .."], answer:0, explanation:"cd .. moves to the parent directory."},
+{section:"2. Finding Your Way on a Linux System", question:"Which command shows hidden files?", options:["ls -a","ls -l","pwd","cd"], answer:0, explanation:"ls -a lists hidden files starting with dot."},
+{section:"2. Finding Your Way on a Linux System", question:"Which command shows disk usage?", options:["du","df","ls","pwd"], answer:0, explanation:"du shows disk usage of files and directories."},
+{section:"2. Finding Your Way on a Linux System", question:"Which command shows available disk space?", options:["df","du","ls","pwd"], answer:0, explanation:"df shows available space on mounted filesystems."},
+{section:"2. Finding Your Way on a Linux System", question:"List files sorted by size:", options:["ls -S","ls -t","ls -r","ls -l"], answer:0, explanation:"ls -S sorts files by size descending."},
+{section:"2. Finding Your Way on a Linux System", question:"List files recursively:", options:["ls -R","ls -a","ls -l","ls -r"], answer:0, explanation:"ls -R lists files in all subdirectories recursively."},
+{section:"2. Finding Your Way on a Linux System", question:"Print username:", options:["whoami","pwd","id","ls"], answer:0, explanation:"whoami prints the current logged-in username."},
+{section:"2. Finding Your Way on a Linux System", question:"Switch to root user:", options:["su -","sudo","login","cd /root"], answer:0, explanation:"su - switches to the root user."},
+{section:"2. Finding Your Way on a Linux System", question:"Display contents of a file:", options:["cat filename","ls filename","pwd filename","rm filename"], answer:0, explanation:"cat displays file contents."},
+{section:"2. Finding Your Way on a Linux System", question:"Search for text in a file:", options:["grep 'text' filename","ls 'text' filename","cat 'text' filename","find 'text' filename"], answer:0, explanation:"grep searches for text patterns inside files."},
+{section:"2. Finding Your Way on a Linux System", question:"View first 10 lines of file:", options:["head filename","tail filename","cat filename","less filename"], answer:0, explanation:"head shows the first 10 lines by default."},
+{section:"2. Finding Your Way on a Linux System", question:"View last 10 lines of file:", options:["tail filename","head filename","cat filename","less filename"], answer:0, explanation:"tail shows the last 10 lines by default."},
+{section:"2. Finding Your Way on a Linux System", question:"Clear the terminal screen:", options:["clear","cls","reset","exit"], answer:0, explanation:"clear empties the terminal display."},
+{section:"2. Finding Your Way on a Linux System", question:"Display system hostname:", options:["hostname","whoami","pwd","uname"], answer:0, explanation:"hostname prints the system’s network name."},
+{section:"2. Finding Your Way on a Linux System", question:"Show environment variables:", options:["env","ls","pwd","cd"], answer:0, explanation:"env lists current environment variables."},
+
+/* ========= SECTION 3 =========
+   The Power of the Command Line (20)
+*/
+{section:"3. The Power of the Command Line",question:"<code>cat file1 file2 > out.txt</code> does what?",options:["Displays both files","Appends to terminal","Combines into new file (overwrite)","Appends to file2"],answer:2,explanation:"Redirect with <code>></code> overwrites <code>out.txt</code> with concatenated contents."},
+{section:"3. The Power of the Command Line",question:"Operator to append without overwriting:",options:[">",">>","|","<"],answer:1,explanation:"<code>>></code> appends stdout to a file."},
+{section:"3. The Power of the Command Line",question:"Purpose of <code>|</code> (pipe)?",options:["Redirect input","Join files","Send output of one cmd to next cmd's input","End a process"],answer:2,explanation:"Pipes chain commands into powerful workflows."},
+{section:"3. The Power of the Command Line",question:"<code>ls | grep txt</code> does:",options:["Finds .txt recursively","Searches inside files","Filters <code>ls</code> output for 'txt' lines","Copies .txt files"],answer:2,explanation:"Grep filters the piped listing text."},
+{section:"3. The Power of the Command Line",question:"First 10 lines of a file:",options:["tail","head","more","less"],answer:1,explanation:"<code>head</code> shows the beginning; <code>head -n N</code> sets count."},
+{section:"3. The Power of the Command Line",question:"Follow a log as it grows:",options:["head -f","less -f","tail -f","cat -n"],answer:2,explanation:"<code>tail -f</code> streams appended lines."},
+{section:"3. The Power of the Command Line",question:"<code>touch</code> does:",options:["Opens file","Edits file","Creates empty / updates timestamp","Deletes file"],answer:2,explanation:"Creates if missing; otherwise updates mtime."},
+{section:"3. The Power of the Command Line",question:"Rename <code>test.txt</code> to <code>renamed.txt</code>:",options:["cp test.txt renamed.txt","mv test.txt renamed.txt","rename test.txt renamed.txt","rm test.txt renamed.txt"],answer:1,explanation:"<code>mv</code> moves or renames."},
+{section:"3. The Power of the Command Line",question:"Delete a file:",options:["mv","remove","rm","del"],answer:2,explanation:"<code>rm</code> removes files; <code>rm -r</code> for directories."},
+{section:"3. The Power of the Command Line",question:"<code>wc</code> prints:",options:["Sorted lines","Env vars","Counts of lines/words/bytes","Columns"],answer:2,explanation:"<code>wc -l</code> for lines, <code>-w</code> words, <code>-c</code> bytes."},
+{section:"3. The Power of the Command Line",question:"<code>chmod</code> is used to:",options:["Modify env","Set permissions","Change owner","Compress files"],answer:1,explanation:"Use octal (e.g., 755) or symbolic (e.g., u+x) modes."},
+{section:"3. The Power of the Command Line",question:"Sort lines alphabetically:",options:["cat","sort","cut","uniq"],answer:1,explanation:"<code>sort</code> orders input; combine with <code>uniq</code> to de-dup."},
+{section:"3. The Power of the Command Line",question:"Redirect only stderr to file:",options:["1> err","2> err","&> err","err> 2"],answer:1,explanation:"FD 2 is stderr; FD 1 is stdout."},
+{section:"3. The Power of the Command Line",question:"Show manual page for <code>ls</code>:",options:["ls --help","man ls","info","whatis ls"],answer:1,explanation:"<code>man</code> displays full manual entries."},
+{section:"3. The Power of the Command Line",question:"List previously run commands:",options:["history","uptime","who","jobs"],answer:0,explanation:"<code>history</code> keeps command history for the shell."},
+{section:"3. The Power of the Command Line",question:"Search for patterns in files:",options:["find","grep","locate","which"],answer:1,explanation:"<code>grep</code> finds lines matching regex/patterns."},
+{section:"3. The Power of the Command Line",question:"Combine two commands only if first succeeds:",options:["cmd1 ; cmd2","cmd1 && cmd2","cmd1 || cmd2","cmd1 | cmd2"],answer:1,explanation:"<code>&&</code> runs the second only on success (exit 0)."},
+{section:"3. The Power of the Command Line",question:"Run second command if first fails:",options:[";","&&","||","|"],answer:2,explanation:"<code>||</code> triggers on non-zero exit status."},
+{section:"3. The Power of the Command Line",question:"Extract first field (colon-delimited) from <code>/etc/passwd</code>:",options:["cut -d':' -f1 /etc/passwd","awk -F: '{print $0}'","wc -l /etc/passwd","sort -n /etc/passwd"],answer:0,explanation:"<code>cut</code> selects fields by delimiter."},
+{section:"3. The Power of the Command Line",question:"Remove consecutive duplicates:",options:["uniq","sort","tr","paste"],answer:0,explanation:"Use <code>sort</code> first for global de-dup: <code>sort file | uniq</code>."},
+
+/* ========= SECTION 4 =========
+   The Linux Operating System (20)
+*/
+{section:"4. The Linux Operating System",question:"Primary function of the kernel:",options:["Manage user files","Provide GUI","Hardware/resource management","Package software"],answer:2,explanation:"The kernel abstracts hardware and schedules processes/memory/I/O."},
+{section:"4. The Linux Operating System",question:"Device driver role:",options:["Boost GUI FPS","Connect user input to apps","Translate OS requests to hardware ops","Format disks automatically"],answer:2,explanation:"Drivers implement hardware-specific control for the kernel."},
+{section:"4. The Linux Operating System",question:"Correct boot order:",options:["Kernel→BIOS→GRUB→init","BIOS/UEFI→Bootloader→Kernel→init/systemd","GRUB→BIOS→init→Kernel","Kernel→GRUB→BIOS→systemd"],answer:1,explanation:"Firmware loads bootloader, which loads the kernel, which starts init/systemd."},
+{section:"4. The Linux Operating System",question:"Role of init/systemd:",options:["User permissions","Memory/swap policy","Start/manage services and processes","Display logs"],answer:2,explanation:"PID 1 brings up and supervises services."},
+{section:"4. The Linux Operating System",question:"<code>uname -r</code> prints:",options:["User","Hostname","Kernel version","CPU info"],answer:2,explanation:"Use <code>uname -a</code> for full info."},
+{section:"4. The Linux Operating System",question:"Realtime processes + CPU/mem usage:",options:["jobs","top","ls","kill"],answer:1,explanation:"<code>top</code> (or <code>htop</code>) shows live stats."},
+{section:"4. The Linux Operating System",question:"PID is:",options:["Password ID","Program Index","File inode","Process identifier"],answer:3,explanation:"Each running process has a unique PID."},
+{section:"4. The Linux Operating System",question:"Show all processes system-wide:",options:["ps aux","ls -a","grep ps","systemctl"],answer:0,explanation:"<code>ps aux</code> lists all processes with details."},
+{section:"4. The Linux Operating System",question:"Stop by PID:",options:["halt","ps -e","kill &lt;PID&gt;","logout"],answer:2,explanation:"<code>kill</code> sends a signal (default SIGTERM)." },
+{section:"4. The Linux Operating System",question:"What is <code>kill -9</code>?",options:["Rename process","Graceful restart","SIGKILL (cannot be trapped)","List threads"],answer:2,explanation:"SIGKILL immediately terminates the process."},
+{section:"4. The Linux Operating System",question:"Difference kill vs kill -9:",options:["delete vs pause","-9 is forceful, cannot be caught","same effect","kill only for kernel threads"],answer:1,explanation:"Prefer plain <code>kill</code> (SIGTERM) before SIGKILL."},
+{section:"4. The Linux Operating System",question:"Modern service manager:",options:["BIOS","systemd","cron","bashrc"],answer:1,explanation:"Most distros use systemd to manage units/services."},
+{section:"4. The Linux Operating System",question:"<code>which</code> returns:",options:["Version","Binary path for command","Owner","Distro"],answer:1,explanation:"Searches the directories listed in <code>$PATH</code>."},
+{section:"4. The Linux Operating System",question:"System binaries are commonly in:",options:["/root/bin","/home/bin","/usr/bin and /bin","/etc/commands"],answer:2,explanation:"Essential user binaries in <code>/bin</code> or <code>/usr/bin</code> (merged on many distros)."},
+{section:"4. The Linux Operating System",question:"Essential config files live in:",options:["/bin","/etc","/home","/var"],answer:1,explanation:"<code>/etc</code> holds system configuration."},
+{section:"4. The Linux Operating System",question:"Multi-core behavior:",options:["Use first only","Auto balance across cores","One kernel per core","Manual tuning required always"],answer:1,explanation:"The scheduler distributes runnable tasks across CPUs."},
+{section:"4. The Linux Operating System",question:"<code>dmesg</code> shows:",options:["Login history","DNS cache","Kernel messages","Home sizes"],answer:2,explanation:"Kernel ring buffer, including device init messages."},
+{section:"4. The Linux Operating System",question:"Loaded kernel modules list:",options:["lsmod","uname -a","ps -ef","top"],answer:0,explanation:"<code>lsmod</code> displays modules; use <code>modprobe</code> to load/unload."},
+{section:"4. The Linux Operating System",question:"What abstracts hardware & schedules resources?",options:["Shell","Package manager","Kernel","systemd"],answer:2,explanation:"That is the kernel’s core responsibility."},
+{section:"4. The Linux Operating System",question:"What is <code>/proc</code>?",options:["Home dirs","Binary store","Virtual FS with process/system info","Logs"],answer:2,explanation:"<code>/proc</code> is a procfs virtual interface to kernel state."},
+
+/* ========= SECTION 5 =========
+   Security and File Permissions (20)
+*/
+{section:"5. Security and File Permissions",question:"Change permissions of a file:",options:["chown","chmod","passwd","groupadd"],answer:1,explanation:"Use <code>chmod</code> with octal or symbolic modes."},
+{section:"5. Security and File Permissions",question:"<code>r--</code> on a file means:",options:["Write+read","Execute only","Read only","No access"],answer:2,explanation:"r=read, w=write, x=execute."},
+{section:"5. Security and File Permissions",question:"Three permission classes:",options:["root, guest, admin","owner, group, others","user, system, guest","exec, del, run"],answer:1,explanation:"Shown as <code>u,g,o</code> in symbolic mode."},
+{section:"5. Security and File Permissions",question:"<code>chmod 755 script.sh</code>:",options:["Full to everyone","rw for owner; r for others; exec for none","rwx owner; r-x group; r-x others","Read-only for all"],answer:2,explanation:"755 = owner rwx (7), group r-x (5), others r-x (5)."},
+{section:"5. Security and File Permissions",question:"'x' on a directory means:",options:["Can be executed like a file","Can list files","Can open files","Can enter (cd) it"],answer:3,explanation:"Execute on a dir allows traversal."},
+{section:"5. Security and File Permissions",question:"<code>chmod u+x file.sh</code> adds:",options:["write for owner","removes exec for owner","execute for owner","execute for group"],answer:2,explanation:"Symbolic add for user (owner)."},
+{section:"5. Security and File Permissions",question:"<code>chown</code> is used to:",options:["Change group only","Change owner (and optionally group)","Check ownership","Change permissions"],answer:1,explanation:"<code>chown user:group file</code>."},
+{section:"5. Security and File Permissions",question:"Change current user password:",options:["passwd","passwd &lt;user&gt;","chpass","sudo"],answer:0,explanation:"<code>passwd</code> with no args affects current user."},
+{section:"5. Security and File Permissions",question:"Effect of <code>umask</code>:",options:["Change system date","Default perms for new files/dirs","Encrypt passwords","Mask IPs"],answer:1,explanation:"E.g., <code>umask 022</code> -> files 644, dirs 755 (by default)."},
+{section:"5. Security and File Permissions",question:"Root UID:",options:["0","1","100","65535"],answer:0,explanation:"UID 0 is superuser."},
+{section:"5. Security and File Permissions",question:"Add a new user:",options:["addgroup","groupadd","useradd","mkuser"],answer:2,explanation:"Then set password with <code>passwd username</code>."},
+{section:"5. Security and File Permissions",question:"Accounts database file:",options:["/etc/shells","/etc/passwd","/usr/bin/users","/home/.users"],answer:1,explanation:"Usernames, UIDs, GIDs, shells live in <code>/etc/passwd</code> (password hashes usually in <code>/etc/shadow</code>)."},
+{section:"5. Security and File Permissions",question:"Run a single command with elevated privs:",options:["su","sudo","passwd","chmod"],answer:1,explanation:"<code>sudo</code> executes a command with another user's privileges."},
+{section:"5. Security and File Permissions",question:"Permissions <code>-rw-r--r--</code> can modify by:",options:["Everyone","Owner only","Group members","No one"],answer:1,explanation:"Only the owner has write bit."},
+{section:"5. Security and File Permissions",question:"Default primary group for new user (common):",options:["root","admin","users","same as username"],answer:3,explanation:"User private groups are common defaults."},
+{section:"5. Security and File Permissions",question:"<code>sudo</code> typically requires:",options:["Kernel mode","Group permission only","Target user password","Current user password (if permitted in sudoers)"],answer:3,explanation:"Sudoers policy controls authentication."},
+{section:"5. Security and File Permissions",question:"Best practice:",options:["Daily work as root","Disable all users","Use sudo instead of logging in as root","Remove /etc/passwd"],answer:2,explanation:"Least-privilege: escalate only when needed."},
+{section:"5. Security and File Permissions",question:"Sticky bit (t) on dir (e.g., /tmp) ensures:",options:["Only root can write","Users can delete only their own files","Files are encrypted","Read-only mount"],answer:1,explanation:"Prevents users from deleting others' files in a shared dir."},
+{section:"5. Security and File Permissions",question:"Symbol in <code>ls -l</code> indicating directory:",options:["-","d","l","r"],answer:1,explanation:"First char: <code>d</code>=directory, <code>-</code>=regular file, <code>l</code>=symlink."},
+{section:"5. Security and File Permissions",question:"Permissions <code>-rwxr-xr--</code> — who can execute?",options:["Owner only","Group and others","Owner and group","Owner and root"],answer:2,explanation:"Owner (rwx) and group (r-x) can execute; others cannot (r--)."},
+];
+
+let currentQuestionIndex=0;
+function loadQuestion(){
+    if(currentQuestionIndex>=quizData.length){
+        document.getElementById('quiz-container').innerHTML='';
+        document.getElementById('next-btn').style.display='none';
+        document.getElementById('result').textContent="Test Complete! Review below:";
+        displayAllAnswers();
+        return;
+    }
+    const qData=quizData[currentQuestionIndex];
+    const container=document.getElementById('quiz-container');
+    container.innerHTML=`
+        <h2>${qData.section}</h2>
+        <div class="question">
+            <p>${qData.question}</p>
+            <div class="options">
+                ${qData.options.map((opt,i)=>`<button onclick="checkAnswer(${i})">${opt}</button>`).join('')}
+            </div>
+            <div class="explanation" id="explanation"></div>
+        </div>
+    `;
+    document.getElementById('next-btn').style.display='none';
+}
+function checkAnswer(selected){
+    const qData=quizData[currentQuestionIndex];
+    const buttons=document.querySelectorAll('.options button');
+    buttons.forEach((btn,i)=>{
+        btn.disabled=true;
+        if(i===qData.answer) btn.classList.add('correct');
+        if(i===selected && i!==qData.answer) btn.classList.add('incorrect');
+    });
+    const expl=document.getElementById('explanation');
+    expl.textContent=qData.explanation;
+    expl.style.opacity=1;
+    document.getElementById('next-btn').style.display='block';
+}
+function nextQuestion(){ currentQuestionIndex++; loadQuestion();}
+function displayAllAnswers(){
+    const container=document.getElementById('quiz-container');
+    container.innerHTML='';
+    quizData.forEach(q=>{
+        const qDiv=document.createElement('div');
+        qDiv.className='question';
+        qDiv.innerHTML=`
+            <h2>${q.section}</h2>
+            <p><strong>Q:</strong> ${q.question}</p>
+            <p><strong>Answer:</strong> ${q.options[q.answer]}</p>
+            <p class="explanation">${q.explanation}</p>
+        `;
+        container.appendChild(qDiv);
+    });
+}
+loadQuestion();
+</script>
+</body>
+</html>
