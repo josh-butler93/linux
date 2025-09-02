@@ -5,3 +5,9 @@ You can press Ctrl + Alt + T or open it from your app menu.
 
 2. Download the Google Chrome .deb Package
 
+Command: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+Command: sudo apt update -y
+Command: sudo apt install -y ./google-chrome-stable_current_amd64.deb
+Command: google-chrome --version
+Command: google-chrome
+
