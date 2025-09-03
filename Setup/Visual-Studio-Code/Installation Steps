@@ -1,0 +1,43 @@
+Step 1: Update your system
+
+Always a good first step:
+
+sudo apt update && sudo apt upgrade -y
+
+📥 Step 2: Install dependencies (if missing)
+sudo apt install -y software-properties-common apt-transport-https wget gpg
+
+🔑 Step 3: Import Microsoft’s GPG key
+
+This ensures packages are trusted.
+
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+rm packages.microsoft.gpg
+
+📂 Step 4: Add the VS Code repository
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+
+⚡ Step 5: Install VS Code
+sudo apt update
+sudo apt install code -y
+
+▶ Step 6: Launch Visual Studio Code
+
+From your non-root user:
+
+code
+
+
+Or if you want it detached from your terminal session:
+
+nohup code >/dev/null 2>&1 &
+
+
+✅ That’s it — VS Code should open in your GUI environment.
+If you want extensions (like Python, Docker, etc.), you can install them from inside the editor, or via CLI, e.g.:
+
+code --install-extension ms-python.python
+
+
+Do you want me to also show you how to sync VS Code settings and extensions across machines (handy if you’ll rebuild servers or work from multiple environments), or just keep it local for now?
