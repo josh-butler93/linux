@@ -1,2 +1,5 @@
 command: ssh <username>@<ip_address
 command: rsync -avz <path to file> <username>@<ip_address>:<path to destination directory>
+command: vim <file_name>
+          :set number
+          # This will show line numbers in the vi editor
