@@ -1,0 +1,38 @@
+Initial Linux Server Setup
+
+epel-release
+zsh
+	-sudo chsh -s /bin/zsh username [tail -n 5 /etc/passwd]
+net-tools
+htop
+btop
+btm*
+tree
+tldr
+bat
+ranger*
+fzf
+ripgrep
+neovim
+openssh-clients	[install on the ssh control server] -control node: sudo dnf install -y openssh-clients
+openssh-server	[install on all other servers] 
+neofetch -fastfetch 
+crawl
+snap
+sudo ln -s /var/lib/snapd/snap /snap
+systemctl enable snapd.socket
+sudo snap install yazi --classic
+edex ui --download from github page
+navigate to downloads dir >> sudo chmod a+x eDEX-...*.AppImage
+mv eDEX-...*.AppImage matrix
+mv eDEX-UI...AppImage /sysadmin/Desktop
+./matrix
+
+Phase 2:
+Disable ssh password login
+Set up ssh keys
+
+Phase 3: 
+Create initial setup playbook
+Configure ufw firewall
+Test out playbook
