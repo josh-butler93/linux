@@ -1,5 +1,5 @@
 # playbooks/install_tools_and_yazi.yml
-- name: Update/upgrade, install tooling, handle snapd and yazi, ask for reboot
+- name: Update/upgrade, install tooling, handle EPEL/snapd/yazi, ask for reboot
   hosts: all
   gather_facts: yes
   become: yes
@@ -33,6 +33,65 @@
           - "OS Family: {{ ansible_facts['os_family'] }}"
           - "Pkg mgr: {{ ansible_facts['pkg_mgr']|default('unknown') }}"
 
+    # -----------------------------------------------------------------------------
+    # If RHEL/Oracle family and EPEL is required, install epel-release first,
+    # verify it is present, then continue. This task is run before any dnf installs.
+    # -----------------------------------------------------------------------------
+    - name: Install EPEL release on RHEL/Oracle family (if required)
+      when:
+        - ansible_facts['os_family'] | default('') | lower() in ['redhat', 'oracle']
+      block:
+        - name: Ensure epel-release package is present (dnf/yum)
+          vars:
+            epel_pkg_name: epel-release
+          block:
+            - name: Try install epel-release with dnf
+              ansible.builtin.dnf:
+                name: "{{ epel_pkg_name }}"
+                state: present
+              register: epel_dnf_result
+              failed_when: false
+              changed_when: epel_dnf_result.changed is defined and epel_dnf_result.changed
+
+            - name: Fallback: try install epel-release with yum (older systems)
+              ansible.builtin.yum:
+                name: "{{ epel_pkg_name }}"
+                state: present
+              when: epel_dnf_result is defined and (epel_dnf_result.rc is defined and epel_dnf_result.rc != 0)
+              register: epel_yum_result
+              failed_when: false
+              changed_when: epel_yum_result.changed is defined and epel_yum_result.changed
+
+          rescue:
+            - name: Report epel install attempt failed (rescue)
+              ansible.builtin.debug:
+                msg: "EPEL install attempt failed on {{ inventory_hostname }} — continuing to verification step"
+
+        - name: Verify epel-release is installed (rpm query)
+          ansible.builtin.command:
+            cmd: rpm -q epel-release
+            warn: false
+          register: epel_verify
+          failed_when: false
+          changed_when: false
+
+        - name: Set fact epel_installed true/false based on verification
+          ansible.builtin.set_fact:
+            epel_installed: "{{ (epel_verify.rc == 0) | bool }}"
+
+        - name: Fail fast if epel is required but not installed
+          ansible.builtin.fail:
+            msg: "epel-release installation failed on {{ inventory_hostname }}; cannot continue with DNF package installs."
+          when: not epel_installed
+
+      rescue:
+        - name: Fail the host if EPEL installation block failed critically
+          ansible.builtin.fail:
+            msg: "EPEL installation block failed on {{ inventory_hostname }}"
+
+    # -----------------------------------------------------------------------------
+    # System updates
+    # -----------------------------------------------------------------------------
     - name: Ensure system is updated (apt)
       block:
         - name: apt update
@@ -67,6 +126,9 @@
           ansible.builtin.fail:
             msg: "DNF update/upgrade failed on {{ inventory_hostname }}"
 
+    # -----------------------------------------------------------------------------
+    # Install packages on apt systems
+    # -----------------------------------------------------------------------------
     - name: Install common packages (apt)
       block:
         - name: Ensure common packages present (apt)
@@ -86,6 +148,10 @@
           ansible.builtin.fail:
             msg: "Critical: apt package installation failed on {{ inventory_hostname }}"
 
+    # -----------------------------------------------------------------------------
+    # Install packages on dnf systems. Only proceed if epel_installed is true (or
+    # if epel not applicable).
+    # -----------------------------------------------------------------------------
     - name: Install common packages (dnf)
       block:
         - name: Ensure common packages present (dnf)
@@ -94,7 +160,9 @@
             state: present
           register: dnf_pkg_install
 
-      when: ansible_facts['pkg_mgr'] == 'dnf'
+      when:
+        - ansible_facts['pkg_mgr'] == 'dnf'
+        - epel_installed | default(true)
       rescue:
         - name: Report dnf package install failure
           ansible.builtin.debug:
@@ -103,6 +171,9 @@
           ansible.builtin.fail:
             msg: "Critical: dnf package installation failed on {{ inventory_hostname }}"
 
+    # -----------------------------------------------------------------------------
+    # snapd handling (enable/start) for systems where snapd is part of common_packages
+    # -----------------------------------------------------------------------------
     - name: Ensure snapd socket is enabled (systemd)
       when: "'snapd' in (common_packages | default([])) and ansible_facts['pkg_mgr'] == 'dnf'"
       block:
@@ -157,7 +228,6 @@
       when: >
         (ansible_facts['pkg_mgr'] == 'apt' and ('snapd' is defined)) or
         (ansible_facts['pkg_mgr'] == 'dnf' and ('snapd' is defined))
-      # Note: this conditional is conservative; pause runs if snapd was part of common_packages
 
     - name: Restart snapd service (if present)
       ansible.builtin.systemd:
@@ -199,6 +269,7 @@
       ansible.builtin.debug:
         msg:
           - "Host {{ inventory_hostname }} installation summary:"
+          - "epel_installed: {{ epel_installed | default('n/a') }}"
           - "snap_install_failed: {{ snap_install_failed | default(false) }}"
 
     - name: Prompt user whether to reboot hosts now
