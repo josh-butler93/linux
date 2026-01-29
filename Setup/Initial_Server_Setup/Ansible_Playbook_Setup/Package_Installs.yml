@@ -1,0 +1,216 @@
+# playbooks/install_tools_and_yazi.yml
+- name: Update/upgrade, install tooling, handle snapd and yazi, ask for reboot
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  vars:
+    common_packages:
+      - net-tools
+      - htop
+      - btop
+      - btm    # adjust if wildcards required per-distro
+      - tree
+      - tldr
+      - bat
+      - ranger
+      - fzf
+      - ripgrep
+      - neovim
+      - neofetch
+      - fastfetch
+      - crawl
+      - snapd
+    # openssh-server will be installed on all hosts (adjust group logic if needed)
+    ssh_package_name: openssh-server
+
+  tasks:
+
+    - name: Show host info
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "OS Family: {{ ansible_facts['os_family'] }}"
+          - "Pkg mgr: {{ ansible_facts['pkg_mgr']|default('unknown') }}"
+
+    - name: Ensure system is updated (apt)
+      block:
+        - name: apt update
+          ansible.builtin.apt:
+            update_cache: yes
+            cache_valid_time: 3600
+
+        - name: apt upgrade dist
+          ansible.builtin.apt:
+            upgrade: dist
+            autoremove: yes
+            autoclean: yes
+      when: ansible_facts['pkg_mgr'] == 'apt'
+      rescue:
+        - name: Fail with apt update/upgrade info
+          ansible.builtin.fail:
+            msg: "Apt update/upgrade failed on {{ inventory_hostname }}"
+
+    - name: Ensure system is updated (dnf)
+      block:
+        - name: dnf update cache
+          ansible.builtin.dnf:
+            update_cache: yes
+
+        - name: dnf upgrade all to latest
+          ansible.builtin.dnf:
+            name: '*'
+            state: latest
+      when: ansible_facts['pkg_mgr'] == 'dnf'
+      rescue:
+        - name: Fail with dnf update/upgrade info
+          ansible.builtin.fail:
+            msg: "DNF update/upgrade failed on {{ inventory_hostname }}"
+
+    - name: Install common packages (apt)
+      block:
+        - name: Ensure common packages present (apt)
+          ansible.builtin.apt:
+            name: "{{ common_packages + [ ssh_package_name ] }}"
+            state: present
+            force: no
+            update_cache: yes
+          register: apt_pkg_install
+
+      when: ansible_facts['pkg_mgr'] == 'apt'
+      rescue:
+        - name: Report apt package install failure
+          ansible.builtin.debug:
+            msg: "Apt package installation failed on {{ inventory_hostname }}; continuing to next hosts"
+        - name: Fail this host's run
+          ansible.builtin.fail:
+            msg: "Critical: apt package installation failed on {{ inventory_hostname }}"
+
+    - name: Install common packages (dnf)
+      block:
+        - name: Ensure common packages present (dnf)
+          ansible.builtin.dnf:
+            name: "{{ common_packages + [ ssh_package_name ] }}"
+            state: present
+          register: dnf_pkg_install
+
+      when: ansible_facts['pkg_mgr'] == 'dnf'
+      rescue:
+        - name: Report dnf package install failure
+          ansible.builtin.debug:
+            msg: "DNF package installation failed on {{ inventory_hostname }}; attempting best-effort recovery"
+        - name: Fail this host's run
+          ansible.builtin.fail:
+            msg: "Critical: dnf package installation failed on {{ inventory_hostname }}"
+
+    - name: Ensure snapd socket is enabled (systemd)
+      when: "'snapd' in (common_packages | default([])) and ansible_facts['pkg_mgr'] == 'dnf'"
+      block:
+        - name: Enable snapd.socket
+          ansible.builtin.systemd:
+            name: snapd.socket
+            enabled: yes
+            state: started
+
+        - name: Start snapd service (daemon) if present
+          ansible.builtin.systemd:
+            name: snapd
+            state: started
+            enabled: yes
+          ignore_errors: yes
+
+      rescue:
+        - name: warn snapd enable/start failed
+          ansible.builtin.debug:
+            msg: "Warning: enabling/starting snapd failed on {{ inventory_hostname }}. Snap installs may fail."
+
+    - name: Ensure snapd is installed for apt systems (Debian/Ubuntu)
+      when: ansible_facts['pkg_mgr'] == 'apt'
+      block:
+        - name: Install snapd (apt)
+          ansible.builtin.apt:
+            name: snapd
+            state: present
+            update_cache: yes
+
+        - name: Ensure snapd socket enabled and started (apt)
+          ansible.builtin.systemd:
+            name: snapd.socket
+            enabled: yes
+            state: started
+
+        - name: Ensure snapd daemon started (apt)
+          ansible.builtin.systemd:
+            name: snapd
+            enabled: yes
+            state: started
+          ignore_errors: yes
+
+      rescue:
+        - name: Warn snapd apt install failed
+          ansible.builtin.debug:
+            msg: "snapd install/start failed on {{ inventory_hostname }} (apt). Snap installs will likely fail."
+
+    - name: Pause 2 minutes to allow snapd to initialize (if snapd exists)
+      ansible.builtin.pause:
+        minutes: 2
+      when: >
+        (ansible_facts['pkg_mgr'] == 'apt' and ('snapd' is defined)) or
+        (ansible_facts['pkg_mgr'] == 'dnf' and ('snapd' is defined))
+      # Note: this conditional is conservative; pause runs if snapd was part of common_packages
+
+    - name: Restart snapd service (if present)
+      ansible.builtin.systemd:
+        name: snapd
+        state: restarted
+      ignore_errors: yes
+      when: ansible_facts['pkg_mgr'] in ['apt', 'dnf']
+
+    - name: Ensure /snap symlink exists (some distros may need it)
+      ansible.builtin.file:
+        src: /var/lib/snapd/snap
+        dest: /snap
+        state: link
+      ignore_errors: yes
+
+    - name: Install yazi via snap
+      block:
+        - name: Attempt snap install yazi (with retry)
+          ansible.builtin.command:
+            cmd: snap install yazi --classic
+            warn: false
+          register: snap_install_result
+          retries: 3
+          delay: 15
+          until: snap_install_result.rc == 0
+
+        - name: Report successful snap install
+          ansible.builtin.debug:
+            msg: "snap install yazi succeeded on {{ inventory_hostname }}"
+      rescue:
+        - name: Warn snap install failed
+          ansible.builtin.debug:
+            msg: "snap install yazi failed on {{ inventory_hostname }}. Please check snapd and network connectivity."
+        - name: Register failure for reporting
+          ansible.builtin.set_fact:
+            snap_install_failed: true
+
+    - name: Show installation summary per host
+      ansible.builtin.debug:
+        msg:
+          - "Host {{ inventory_hostname }} installation summary:"
+          - "snap_install_failed: {{ snap_install_failed | default(false) }}"
+
+    - name: Prompt user whether to reboot hosts now
+      ansible.builtin.pause:
+        prompt: "Reboot {{ inventory_hostname }} now? (y/N)"
+      register: reboot_prompt
+
+    - name: Normalize reboot response
+      ansible.builtin.set_fact:
+        reboot_answer: "{{ (reboot_prompt.user_input | default('n')) | lower() }}"
+
+    - name: Reboot host if requested
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+      when: reboot_answer in ['y', 'yes']
