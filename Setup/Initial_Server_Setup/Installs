@@ -3,6 +3,7 @@ Initial Linux Server Setup
 epel-release
 zsh
 	-sudo chsh -s /bin/zsh username [tail -n 5 /etc/passwd]
+ufw
 net-tools
 htop
 btop
