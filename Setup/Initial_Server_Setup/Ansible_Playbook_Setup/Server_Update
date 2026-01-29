@@ -1,0 +1,54 @@
+# playbooks/update_system.yml
+- name: Gather host info and perform update & upgrade
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    - name: Show basic gathered facts
+      ansible.builtin.debug:
+        msg:
+          - "Hostname: {{ ansible_facts['hostname'] }}"
+          - "OS Family: {{ ansible_facts['os_family'] }}"
+          - "Distribution: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+          - "Package manager: {{ ansible_facts['pkg_mgr']|default('unknown') }}"
+
+    - name: Update apt cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_facts['pkg_mgr'] == 'apt'
+      register: apt_update
+      ignore_errors: no
+
+    - name: Upgrade all packages (apt)
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+      when: ansible_facts['pkg_mgr'] == 'apt'
+      register: apt_upgrade
+      ignore_errors: no
+
+    - name: Update package metadata (dnf)
+      ansible.builtin.dnf:
+        update_cache: yes
+      when: ansible_facts['pkg_mgr'] == 'dnf'
+      register: dnf_update
+      ignore_errors: no
+
+    - name: Upgrade all packages (dnf)
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+      when: ansible_facts['pkg_mgr'] == 'dnf'
+      register: dnf_upgrade
+      ignore_errors: no
+
+    - name: Summary of update operations
+      ansible.builtin.debug:
+        msg:
+          - "apt_update: {{ apt_update is defined | ternary(apt_update.changed | default(false), 'not run') }}"
+          - "apt_upgrade: {{ apt_upgrade is defined | ternary(apt_upgrade.changed | default(false), 'not run') }}"
+          - "dnf_update: {{ dnf_update is defined | ternary(dnf_update.changed | default(false), 'not run') }}"
+          - "dnf_upgrade: {{ dnf_upgrade is defined | ternary(dnf_upgrade.changed | default(false), 'not run') }}"
