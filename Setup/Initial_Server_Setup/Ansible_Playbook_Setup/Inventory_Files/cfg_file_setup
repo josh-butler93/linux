@@ -1,0 +1,32 @@
+install on the ansible control server
+  <pkg_mgr> ansible-core
+
+run below command:
+  ansible --version
+  ===========================
+  --expected output below--
+  ansible [core 2.x.x]
+  config file = /etc/ansible/ansible.cfg
+  ...
+  =======================================
+
+  [local]
+  localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
+
+  [rhel]
+  nagios ansible_host=ip_address
+  
+  ansible local -i ~/hosts.ini -m ping
+  ansible all -i hosts.ini -m ping -k
+
+/////////////////////////////////////
+  ---
+- name: Interactive ping playbook
+  hosts: "{{ target_group }}"
+  gather_facts: false
+
+  tasks:
+    - name: Ping selected hosts
+      ping:
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+]]]]]ansible-playbook ~/ping_hosts.yml -i ~/hosts.ini --extra-vars "target_group=$(read -p 'Enter group to ping: ' g; echo $g)"
