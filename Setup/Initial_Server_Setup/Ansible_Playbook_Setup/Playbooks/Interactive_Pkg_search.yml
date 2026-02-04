@@ -1,0 +1,134 @@
+---
+- name: Interactive Package Search & Install
+  hosts: "{{ target_group | default('all') }}"
+  gather_facts: true
+  become: true
+
+  vars_prompt:
+    - name: target_group
+      prompt: "Enter host group to target (local, debian, arch, rhel, all)"
+      private: no
+    - name: pkg_name
+      prompt: "Enter the package name to search/install"
+      private: no
+
+  tasks:
+
+    - name: Determine representative host for package manager query
+      set_fact:
+        rep_host: "{{ groups[target_group][0] if target_group != 'all' else groups['all'][0] }}"
+      run_once: true
+
+    - name: Set package manager command based on OS
+      set_fact:
+        pkg_check_cmd: >-
+          {% set osf = hostvars[rep_host]['ansible_facts']['os_family'] %}
+          {% if osf == 'Debian' %}
+            apt-cache policy {{ pkg_name }}
+          {% elif osf == 'RedHat' %}
+            dnf list {{ pkg_name }}
+          {% elif osf == 'Archlinux' %}
+            pacman -Si {{ pkg_name }}
+          {% else %}
+            echo "Unsupported OS"
+          {% endif %}
+      run_once: true
+
+    - name: Query package manager to check if package exists
+      shell: "{{ pkg_check_cmd }}"
+      register: pkg_check
+      run_once: true
+      ignore_errors: yes
+
+    - name: Show package availability
+      debug:
+        msg: "{{ pkg_check.stdout if pkg_check.rc == 0 else 'Package not found in repo' }}"
+      run_once: true
+
+    - name: Ask user if they want to install on all hosts or a single host
+      pause:
+        prompt: "Install package on all hosts or a single host? (all/single)"
+      register: install_choice
+      run_once: true
+
+    - name: If single, prompt for which host
+      pause:
+        prompt: "Enter the hostname to install the package on (from the group)"
+      register: single_host_choice
+      when: install_choice.user_input | lower == 'single'
+      run_once: true
+
+    - name: Set target hosts for installation
+      set_fact:
+        install_hosts: >-
+          {% if install_choice.user_input | lower == 'all' %}
+            {{ groups[target_group] }}
+          {% else %}
+            [ single_host_choice.user_input ]
+          {% endif %}
+      run_once: true
+
+    - name: Install package on Debian/Ubuntu
+      apt:
+        name: "{{ pkg_name }}"
+        state: present
+        update_cache: yes
+      when: hostvars[item]['ansible_facts']['os_family'] == "Debian"
+      loop: "{{ install_hosts }}"
+
+    - name: Install package on RHEL/Fedora
+      dnf:
+        name: "{{ pkg_name }}"
+        state: present
+      when: hostvars[item]['ansible_facts']['os_family'] == "RedHat"
+      loop: "{{ install_hosts }}"
+
+    - name: Install package on Arch
+      pacman:
+        name: "{{ pkg_name }}"
+        state: present
+        update_cache: yes
+      when: hostvars[item]['ansible_facts']['os_family'] == "Archlinux"
+      loop: "{{ install_hosts }}"
+
+    - name: Ask if user wants to reboot hosts
+      pause:
+        prompt: "Do you want to reboot the host(s) now? (yes/no)"
+      register: reboot_choice
+      run_once: true
+
+    - name: Reboot hosts if requested
+      reboot:
+      when: reboot_choice.user_input | lower == 'yes'
+      loop: "{{ install_hosts }}"
+      loop_control:
+        loop_var: item
+
+    - name: Wait for hosts to come back online
+      wait_for_connection:
+      loop: "{{ install_hosts }}"
+      loop_control:
+        loop_var: item
+      when: reboot_choice.user_input | lower == 'yes'
+
+    - name: Verify package installed on hosts
+      shell: >-
+        {% if hostvars[item]['ansible_facts']['os_family'] == 'Debian' %}
+          dpkg -l | grep {{ pkg_name }}
+        {% elif hostvars[item]['ansible_facts']['os_family'] == 'RedHat' %}
+          rpm -q {{ pkg_name }}
+        {% elif hostvars[item]['ansible_facts']['os_family'] == 'Archlinux' %}
+          pacman -Qi {{ pkg_name }}
+        {% endif %}
+      register: pkg_verify
+      ignore_errors: yes
+      loop: "{{ install_hosts }}"
+      loop_control:
+        loop_var: item
+
+    - name: Show verification results
+      debug:
+        msg: "Host {{ item }}: {{ pkg_verify.results[loop.index0].stdout if pkg_verify.results[loop.index0].rc == 0 else 'Package not installed' }}"
+      loop: "{{ install_hosts }}"
+      loop_control:
+        loop_var: item
