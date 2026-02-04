@@ -1,1 +1,66 @@
+server ssh = pkg_mgr install openssh-client
+clients = pkg_mgr install openssh-server
 
+systemctl enable --now ssh
+or 
+systemctl start ssh
+
+
+verifitcation
+ss -tulpn | grep :22
+  results = LISTEN 0 128 0.0.0.0:22  0.0.0.0:* users:(("sshd",pid=XXX))
+  or
+  [::]:22
+
+ping <server_ip> from control node
+
+ufw status = inactive
+ufw enable
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow ssh
+ufw status verbose
+
+sudo nano /etc/ssh/sshd_config
+modify the below lines
+//////////////////////////////
+# --- Security baseline ---
+Protocol 2
+
+# Authentication
+--PasswordAuthentication yes--change to no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Root login (safe)
+--PermitRootLogin prohibit-password--this means root cannot use passowrd but can use sshkeys for login
+--PermitRootLogin no--prevents root login in general if you want to change it to this 
+
+# Brute-force resistance
+--MaxAuthTries 3--valid login retries for brute for prevention
+LoginGraceTime 30
+
+# Reduce attack surface
+X11Forwarding no
+PrintMotd no
+
+# Keep sessions sane
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# ssh key authentication ---look for this line as well
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+--this is typically set by defualt in the config file
+
+# port setup
+#Port 22 -- this is the port it is set to by defualt
+--Port 2222or2200or22222--to help harden the server
+/////////////////////////////////////////
+sudo sshd -t --run this to verify that there are no errors
+sudo systemctl reload ssh
+
+sudo ufw allow 2222/tcp
+sudo ufw delete allow 22/tcp
+ssh -p 2222 user@ip/hostname
